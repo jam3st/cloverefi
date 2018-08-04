@@ -61,7 +61,7 @@ VOID WaitForCR()
   }
 }
 */
-
+#if 0
 //this procedure was developed for 10.5. Seems no more needed
 VOID CorrectMemoryMap(IN UINT32 memMap, 
                       IN UINT32 memDescriptorSize,
@@ -198,25 +198,52 @@ VOID CorrectMemoryMap(IN UINT32 memMap,
 	}
 	
 }
+#endif
 
 VOID
 EFIAPI
 OnExitBootServices(IN EFI_EVENT Event, IN VOID *Context)
 {
-//  EFI_STATUS Status;
-/*  if (DoHibernateWake) {
-    gST->ConOut->OutputString (gST->ConOut, L"wake!!!");
-    gBS->Stall(5000000);     // 5 seconds delay
-    return;
-  } */
+  if (gCPUStructure.Vendor == CPU_VENDOR_INTEL &&
+      (gCPUStructure.Family == 0x06 && gCPUStructure.Model >= CPU_MODEL_SANDY_BRIDGE)
+       ) {
+    UINT64 msr = 0;
 
-//	Print(L"OnExitBootServices.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+    msr = AsmReadMsr64(MSR_PKG_CST_CONFIG_CONTROL); //0xE2
+    //  AsciiPrint("MSR 0xE2 on Exit BS %08x\n", msr);
+
+  }
+/*
+//  EFI_STATUS Status;
+  {
+    //    UINT32                    machineSignature    = 0;
+    EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE     *FadtPointer = NULL;
+    EFI_ACPI_4_0_FIRMWARE_ACPI_CONTROL_STRUCTURE  *Facs = NULL;
+
+    //    DBG("---dump hibernations data---\n");
+    FadtPointer = GetFadt();
+    if (FadtPointer != NULL) {
+      Facs = (EFI_ACPI_4_0_FIRMWARE_ACPI_CONTROL_STRUCTURE*)(UINTN)(FadtPointer->FirmwareCtrl);
+
+      AsciiPrint("  Firmware wake address=%08lx\n", Facs->FirmwareWakingVector);
+      AsciiPrint("  Firmware wake 64 addr=%16llx\n",  Facs->XFirmwareWakingVector);
+      AsciiPrint("  Hardware signature   =%08lx\n", Facs->HardwareSignature);
+      AsciiPrint("  GlobalLock           =%08lx\n", Facs->GlobalLock);
+      AsciiPrint("  Flags                =%08lx\n", Facs->Flags);
+      AsciiPrint(" HS at offset 0x%08x\n", OFFSET_OF(EFI_ACPI_4_0_FIRMWARE_ACPI_CONTROL_STRUCTURE, HardwareSignature));
+ //     machineSignature = Facs->HardwareSignature;
+    }
+  }
+*/  
+
+
   gST->ConOut->OutputString (gST->ConOut, L"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	//
 	// Patch kernel and kexts if needed
 	//
 	KernelAndKextsPatcherStart((LOADER_ENTRY *)Context);
 	
+#if 0
 //    gBS->Stall(2000000);
 	//PauseForKey(L"press any key to MemoryFix");
 	if (gSettings.MemoryFix) {
@@ -285,6 +312,7 @@ OnExitBootServices(IN EFI_EVENT Event, IN VOID *Context)
 //      bootArgs1v->efiSystemTable = (UINT32)(UINTN)gST;
     }
 	}
+#endif
 	if (gSettings.USBFixOwnership) {
 		// Note: blocks on Aptio
 //		DisableUsbLegacySupport();
@@ -309,6 +337,16 @@ OnReadyToBoot (
                )
 {
 //
+  if ((gCPUStructure.Vendor == CPU_VENDOR_INTEL &&
+       (gCPUStructure.Family == 0x06 && gCPUStructure.Model >= CPU_MODEL_SANDY_BRIDGE)
+       )) {
+    UINT64 msr = 0;
+
+    msr = AsmReadMsr64(MSR_PKG_CST_CONFIG_CONTROL); //0xE2
+
+  }
+//  AsciiPrint("MSR 0xE2 on ReadyToBoot %08x\n", msr);
+
 }
 
 VOID

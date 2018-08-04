@@ -44,6 +44,44 @@ EFI_GUID                 *gEfiBootDeviceGuid;
 
 APPLE_SMC_IO_PROTOCOL        *gAppleSmc = NULL;
 
+typedef struct NVRAM_DATA
+{
+  CHAR16      *VariableName;
+  EFI_GUID    *Guid;
+} NVRAM_DATA;
+
+CONST NVRAM_DATA ResetNvramData[] = {
+  // Hibernationfixup Variables
+  //{ L"Boot0082",                  &gEfiGlobalVariableGuid },
+  //{ L"BootNext",                  &gEfiGlobalVariableGuid },
+  //{ L"IOHibernateRTCVariables",   &gEfiAppleBootGuid },
+  //{ L"boot-image",                &gEfiAppleBootGuid },
+  //{ L"boot-image-key",            &gEfiAppleBootGuid },
+  //{ L"boot-signature",            &gEfiAppleBootGuid },
+  //{ L"boot-switch-vars",          &gEfiAppleBootGuid },
+
+  // Clover Variables
+  { L"Clover.BackupDirOnDestVol", &gEfiAppleBootGuid },
+  { L"Clover.KeepBackupLimit",    &gEfiAppleBootGuid },
+  { L"Clover.LogEveryBoot",       &gEfiAppleBootGuid },
+  { L"Clover.LogLineCount",       &gEfiAppleBootGuid },
+  { L"Clover.MountEFI",           &gEfiAppleBootGuid },
+  { L"Clover.NVRamDisk",          &gEfiAppleBootGuid },
+  { L"Clover.Theme",              &gEfiAppleBootGuid },
+
+  // Non-volatile Variables
+  //{ L"backlight-level",           &gEfiAppleBootGuid },
+  //{ L"bootercfg",                 &gEfiAppleBootGuid },
+  { L"boot-args",                 &gEfiAppleBootGuid },
+  //{ L"csr-active-config",         &gEfiAppleBootGuid },
+  { L"install-product-url",       &gEfiAppleBootGuid },
+  //{ L"platform-uuid",             &gEfiAppleBootGuid },
+  { L"previous-system-uuid",      &gEfiAppleBootGuid },
+  //{ L"prev-lang:kbd",             &gEfiAppleBootGuid },
+  //{ L"security-mode",             &gEfiAppleBootGuid },
+  { L"nvda_drv",                  &gEfiAppleBootGuid },
+};
+
 /** returns given time as miliseconds.
  *  assumes 31 days per month, so it's not correct,
  *  but is enough for basic checks.
@@ -66,7 +104,6 @@ GetEfiTimeInMs (
     
     return TimeMs;
 }
-
 
 /** Reads and returns value of NVRAM variable. */
 VOID *GetNvramVariable (
@@ -114,14 +151,14 @@ VOID *GetNvramVariable (
 /** Sets NVRAM variable. Does nothing if variable with the same data and attributes already exists. */
 EFI_STATUS
 SetNvramVariable (
- 	IN  CHAR16   *VariableName,
- 	IN  EFI_GUID *VendorGuid,
-  IN  UINT32   Attributes,
-  IN  UINTN    DataSize,
-  IN  VOID     *Data
+    IN  CHAR16   *VariableName,
+    IN  EFI_GUID *VendorGuid,
+    IN  UINT32   Attributes,
+    IN  UINTN    DataSize,
+    IN  VOID     *Data
   )
 {
-//EFI_STATUS Status;
+  //EFI_STATUS Status;
   VOID   *OldData;
   UINTN  OldDataSize = 0;
   UINT32 OldAttributes = 0;
@@ -139,18 +176,19 @@ SetNvramVariable (
       FreePool (OldData);
       return EFI_SUCCESS;
     }
-    //DBG (", not equal");
+    //DBG (", not equal\n");
     
     FreePool (OldData);
     
     // not the same - delete previous one if attributes are different
     if (OldAttributes != Attributes) {
-		  DeleteNvramVariable (VariableName, VendorGuid);
+      DeleteNvramVariable (VariableName, VendorGuid);
       //DBG (", diff. attr: deleting old (%r)", Status);
     }
   }
-//  DBG (" -> writing new (%r)\n", Status);
-//  return Status;
+  //DBG ("\n"); // for debug without Status
+  //DBG (" -> writing new (%r)\n", Status);
+  //return Status;
  
   return gRT->SetVariable (VariableName, VendorGuid, Attributes, DataSize, Data);
   
@@ -168,7 +206,7 @@ AddNvramVariable (
 {
   VOID       *OldData;
 
-  //DBG ("SetNvramVariable (%s, guid, 0x%x, %d):", VariableName, Attributes, DataSize);
+  //DBG ("SetNvramVariable (%s, guid, 0x%x, %d):\n", VariableName, Attributes, DataSize);
   OldData = GetNvramVariable (VariableName, VendorGuid, NULL, NULL);
   if (OldData == NULL)
   {
@@ -193,8 +231,77 @@ DeleteNvramVariable (
     
   // Delete: attributes and data size = 0
   Status = gRT->SetVariable (VariableName, VendorGuid, 0, 0, NULL);
-  //DBG ("DeleteNvramVariable (%s, guid = %r\n):", VariableName, Status);
+  //DBG ("DeleteNvramVariable (%s, guid = %r):\n", VariableName, Status);
     
+  return Status;
+}
+
+EFI_STATUS
+ResetEmuNvram ()
+{
+  EFI_STATUS      Status = EFI_NOT_FOUND;
+  UINTN           VolumeIndex;
+  //UINTN           Index, ResetNvramDataCount = ARRAY_SIZE (ResetNvramData);
+  REFIT_VOLUME    *Volume;
+  EFI_FILE_HANDLE FileHandle;
+
+  //DBG("ResetEmuNvram: searching volumes for nvram.plist\n");
+
+  for (VolumeIndex = 0; VolumeIndex < VolumesCount; ++VolumeIndex) {
+     Volume = Volumes[VolumeIndex];
+        
+     if (!Volume->RootDir) {
+       continue;
+     }
+
+     Status = Volume->RootDir->Open (Volume->RootDir, &FileHandle, L"nvram.plist", EFI_FILE_MODE_READ, 0);
+     if (EFI_ERROR(Status)) {
+       //DBG("- [%02d]: '%s' - no nvram.plist - skipping!\n", VolumeIndex, Volume->VolName);
+       continue;
+     }
+     
+     // find the partition where nvram.plist can be deleted and delete it
+     if (Volume != NULL) {
+       if (StriStr(Volume->VolName, L"EFI") != NULL) {
+         //DBG("- [%02d]: '%s' - found nvram.plist and deleted it\n", VolumeIndex, Volume->VolName);
+         Status = DeleteFile (Volume->RootDir, L"nvram.plist");
+       } else {
+         //DBG("- [%02d]: '%s' - found nvram.plist but can't delete it\n", VolumeIndex, Volume->VolName);
+       }
+     }
+  }
+
+  //DBG("ResetEmuNvram: cleanup NVRAM variables\n");
+    
+  /*for (Index = 0; Index < ResetNvramDataCount; Index++) {
+    Status = DeleteNvramVariable(ResetNvramData[Index].VariableName, ResetNvramData[Index].Guid);
+    if (EFI_ERROR(Status)) {
+      DBG("- [%02d]: '%s' - not exists\n", Index, ResetNvramData[Index].VariableName);
+    } else {
+      DBG("- [%02d]: '%s' - deleted it\n", Index, ResetNvramData[Index].VariableName);
+    }
+  }*/
+
+  return Status;
+}
+
+EFI_STATUS
+ResetNativeNvram ()
+{
+  EFI_STATUS    Status = EFI_NOT_FOUND;
+  UINTN         Index, ResetNvramDataCount = ARRAY_SIZE (ResetNvramData);
+
+  //DBG("ResetNativeNvram: cleanup NVRAM variables\n");
+
+  for (Index = 0; Index < ResetNvramDataCount; Index++) {
+    Status = DeleteNvramVariable(ResetNvramData[Index].VariableName, ResetNvramData[Index].Guid);
+    if (EFI_ERROR(Status)) {
+      //DBG("- [%02d]: '%s' - not exists\n", Index, ResetNvramData[Index].VariableName);
+    } else {
+      //DBG("- [%02d]: '%s' - deleted it\n", Index, ResetNvramData[Index].VariableName);
+    }
+  }
+
   return Status;
 }
 
@@ -307,6 +414,7 @@ GetSmcKeys (BOOLEAN WriteToSMC)
     CHAR8 Mode = SMC_MODE_APPCODE;
     NKey[3] = NumKey & 0xFF;
     NKey[2] = (NumKey >> 8) & 0xFF; //key, size, type, attr
+    DBG("Registered %d SMC keys\n", NumKey);
     Status = gAppleSmc->SmcAddKey(gAppleSmc, FourCharKey("#KEY"), 4, SmcKeyTypeUint32, 0xC0);
     if (!EFI_ERROR(Status)) {
       Status = gAppleSmc->SmcWriteValue(gAppleSmc, FourCharKey("#KEY"), 4, (SMC_DATA *)&NKey);
@@ -853,7 +961,9 @@ PutNvramPlistToRtVars ()
     }
 
     if (AsciiStrCmp (Tag->string, "Boot0082") == 0 || AsciiStrCmp (Tag->string, "BootNext") == 0) {
-        VendorGuid = &gEfiGlobalVariableGuid;
+      VendorGuid = &gEfiGlobalVariableGuid;
+      // it may happen only in this case
+      GlobalConfig.HibernationFixup = TRUE;
     }
 
     AsciiStrToUnicodeStrS(Tag->string, KeyBuf, 128);
@@ -868,7 +978,7 @@ PutNvramPlistToRtVars ()
       Value = ValTag->string;
       Size  = AsciiStrLen (Value);
       if (!GlobalConfig.DebugLog) {
-        DBG ("String: Size = %d, Val = '%a'", Size, Value);
+        DBG ("String: Size = %d, Val = '%a'\n", Size, Value);
       }
       
     } else if (ValTag->type == kTagTypeData) {
@@ -881,6 +991,9 @@ PutNvramPlistToRtVars ()
         for (i = 0; i < Size; i++) {
           DBG("%02x ", *((UINT8*)Value + i));
         }
+      }
+      if (!GlobalConfig.DebugLog) {
+       DBG ("\n");
       }
     } else {
       DBG ("ERROR: Unsupported tag type: %d\n", ValTag->type);
@@ -907,9 +1020,6 @@ PutNvramPlistToRtVars ()
                       Size,
                       Value
                       );
-    if (!GlobalConfig.DebugLog) {
-      DBG ("\n");
-    }
   }
 }
 

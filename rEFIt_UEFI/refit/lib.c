@@ -599,6 +599,7 @@ static VOID ScanVolumeBootcode(IN OUT REFIT_VOLUME *Volume, OUT BOOLEAN *Bootabl
         Volume->LegacyOS->IconName = L"grub,linux";
         Volume->LegacyOS->Name = L"Linux";
         Volume->BootType = BOOTING_BY_PBR;
+        /*
       } else if ((*((UINT32 *)(SectorBuffer)) == 0x4d0062e9 &&
                   *((UINT16 *)(SectorBuffer + 510)) == 0xaa55) ||
                  FindMem(SectorBuffer, 2048, "BOOT      ", 10) >= 0) { //reboot Clover
@@ -608,7 +609,7 @@ static VOID ScanVolumeBootcode(IN OUT REFIT_VOLUME *Volume, OUT BOOLEAN *Bootabl
         Volume->LegacyOS->Type = OSTYPE_VAR;
         Volume->BootType = BOOTING_BY_PBR;
         //        DBG("Detected Clover FAT32 bootcode\n");
-        
+     */   
         
       } else if ((*((UINT32 *)(SectorBuffer + 502)) == 0 &&
                   *((UINT32 *)(SectorBuffer + 506)) == 50000 &&
@@ -1006,7 +1007,7 @@ static EFI_STATUS ScanVolume(IN OUT REFIT_VOLUME *Volume)
       FreePool(tmpName);
       // NOTE: this is normal for Apple's VenMedia device paths
     } else {
-      Volume->VolName = L"Unknown HD";
+      Volume->VolName = EfiStrDuplicate(L"Unknown HD"); //To be able to free it
     }
   }
   
@@ -1118,12 +1119,14 @@ VOID ScanVolumes(VOID)
     if (!EFI_ERROR(Status)) {
       
       AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
-      for (HVi = 0; HVi < gSettings.HVCount; HVi++) {
-        if (StriStr(Volume->DevicePathString, gSettings.HVHideStrings[HVi]) ||
-            (Volume->VolName != NULL && StriStr(Volume->VolName, gSettings.HVHideStrings[HVi]))) {
-          Volume->Hidden = TRUE;
-          DBG("        hiding this volume\n");
-          break;
+      if (!gSettings.ShowHiddenEntries) {
+        for (HVi = 0; HVi < gSettings.HVCount; HVi++) {
+          if (StriStr(Volume->DevicePathString, gSettings.HVHideStrings[HVi]) ||
+              (Volume->VolName != NULL && StriStr(Volume->VolName, gSettings.HVHideStrings[HVi]))) {
+            Volume->Hidden = TRUE;
+            DBG("        hiding this volume\n");
+            break;
+          }
         }
       }
       
@@ -1343,11 +1346,13 @@ REFIT_VOLUME *FindVolumeByName(IN CHAR16 *VolName)
 BOOLEAN FileExists(IN EFI_FILE *Root, IN CHAR16 *RelativePath)
 {
   EFI_STATUS  Status;
-  EFI_FILE    *TestFile;
+  EFI_FILE    *TestFile = NULL;
   
   Status = Root->Open(Root, &TestFile, RelativePath, EFI_FILE_MODE_READ, 0);
   if (Status == EFI_SUCCESS) {
-    TestFile->Close(TestFile);
+    if (TestFile && TestFile->Close) {
+      TestFile->Close(TestFile);
+    }
     return TRUE;
   }
   return FALSE;

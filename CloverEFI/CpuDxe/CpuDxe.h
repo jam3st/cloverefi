@@ -133,6 +133,9 @@ InstallInterruptHandler (
   );
 
 VOID
+#ifdef __GNUC__
+__attribute__((visibility("hidden")))
+#endif
 SystemExceptionHandler (
   VOID
   );

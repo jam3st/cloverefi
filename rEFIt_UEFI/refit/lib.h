@@ -187,24 +187,25 @@ OSTYPE_COMPARE_IMP(OSTYPE_IS_LINUX, type1, type2) || OSTYPE_COMPARE_IMP(OSTYPE_I
 #define OPT_I386            (1 << 0)
 #define OPT_X64             (1 << 1)
 #define OPT_VERBOSE         (1 << 2)
-#define OPT_SINGLE_USER     (1 << 3)
-#define OPT_SAFE            (1 << 4)
-#define OPT_NVDISABLE       (1 << 5)
-#define OPT_SLIDE           (1 << 6)
-#define OPT_POWERNAPOFF     (1 << 7)
-#define OPT_XCPM            (1 << 8) 
-#define OPT_GNOIDLE         (1 << 9) 
-#define OPT_GNOSLEEP        (1 << 10) 
-#define OPT_GNOMSI          (1 << 11)
-#define OPT_EHCUSB          (1 << 12)
-#define OPT_KEEPSYMS        (1 << 13)
-#define OPT_DEBUG           (1 << 14)
-#define OPT_KEXTLOG         (1 << 15)
-#define OPT_APPLEALC        (1 << 16)
-#define OPT_SHIKI           (1 << 17)
-#define INX_NVWEBON         18
+#define OPT_NOCACHES        (1 << 3)
+#define OPT_SINGLE_USER     (1 << 4)
+#define OPT_SAFE            (1 << 5)
+#define OPT_NVDISABLE       (1 << 6)
+#define OPT_SLIDE           (1 << 7)
+#define OPT_POWERNAPOFF     (1 << 8)
+#define OPT_XCPM            (1 << 9)
+#define OPT_GNOIDLE         (1 << 10)
+#define OPT_GNOSLEEP        (1 << 11)
+#define OPT_GNOMSI          (1 << 12)
+#define OPT_EHCUSB          (1 << 13)
+#define OPT_KEEPSYMS        (1 << 14)
+#define OPT_DEBUG           (1 << 15)
+#define OPT_KEXTLOG         (1 << 16)
+#define OPT_APPLEALC        (1 << 17)
+#define OPT_SHIKI           (1 << 18)
+#define INX_NVWEBON         19
 #define OPT_NVWEBON         (1 << INX_NVWEBON)
-#define NUM_OPT             19
+#define NUM_OPT             20
 extern CHAR16* ArgOptional[];
 
 #define IS_EXTENDED_PART_TYPE(type) ((type) == 0x05 || (type) == 0x0f || (type) == 0x85)
@@ -369,6 +370,8 @@ extern INTN ScrollbarYMovement;
 #define SCREEN_DSDT_PATCHES 25
 #define SCREEN_DEVICES    26
 #define SCREEN_BOOTER     27
+#define SCREEN_KEXT_INJECT   28
+#define SCREEN_KEXTS_MAN     29
 
 #define MAX_ANIME  41
 
@@ -476,6 +479,7 @@ typedef struct {
   BOOLEAN     FastBoot;
   BOOLEAN     NeverHibernate;
   BOOLEAN     StrictHibernate;
+  BOOLEAN     RtcHibernateAware;
   FONT_TYPE   Font;
   INTN        CharWidth;
   UINTN       SelectionColor;
@@ -511,10 +515,12 @@ typedef struct {
   INTN        MainEntriesSize;
   INTN        TileXSpace;
   INTN        TileYSpace;
+  INTN        IconFormat;
   BOOLEAN     Proportional;
   BOOLEAN     NoEarlyProgress;
-//  INTN        PruneScrollRows;
-  INTN        IconFormat;
+  BOOLEAN     ShowOptimus;
+  BOOLEAN     HibernationFixup;
+  BOOLEAN     SignatureFixup;
 } REFIT_CONFIG;
 
 // types
@@ -555,11 +561,11 @@ typedef struct KERNEL_AND_KEXT_PATCHES
 {
   BOOLEAN KPDebug;
   BOOLEAN KPKernelCpu;
-  BOOLEAN KPLapicPanic;
-  BOOLEAN KPHaswellE;
-  BOOLEAN KPAsusAICPUPM;
-  BOOLEAN KPAppleRTC;
+  BOOLEAN KPKernelLapic;
+  BOOLEAN KPKernelXCPM;
   BOOLEAN KPKernelPm; 
+  BOOLEAN KPAppleIntelCPUPM;
+  BOOLEAN KPAppleRTC;
   BOOLEAN KPDELLSMBIOS;  // Dell SMBIOS patch
 //  UINT8   pad[1];
   UINT32  FakeCPUID;
@@ -695,7 +701,7 @@ EFI_STATUS  ReinitRefitLib(VOID);
 EFI_STATUS  ReinitSelfLib(VOID);
 //extern EFI_STATUS FinishInitRefitLib(VOID); -- static
 VOID        PauseForKey(IN CHAR16 *Msg);
-BOOLEAN     IsEmbeddedTheme();
+BOOLEAN     IsEmbeddedTheme(VOID);
 UINT8       GetOSTypeFromPath (IN  CHAR16 *Path);
 
 VOID CreateList(OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount);
@@ -705,6 +711,10 @@ VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID 
 VOID GetListOfThemes(VOID);
 VOID GetListOfConfigs(VOID);
 VOID GetListOfACPI(VOID);
+VOID GetListOfDsdts(VOID);
+
+// syscl - get list of inject kext(s)
+VOID GetListOfInjectKext(CHAR16 *);
 
 EFI_STATUS ExtractLegacyLoaderPaths(EFI_DEVICE_PATH **PathList, UINTN MaxPaths, EFI_DEVICE_PATH **HardcodedPathList);
 
@@ -890,7 +900,7 @@ UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN INTN DefaultSelection, OUT RE
 VOID DrawMenuText(IN CHAR16 *Text, IN INTN SelectedWidth, IN INTN XPos, IN INTN YPos, IN INTN Cursor);
 VOID ReinitVolumes(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
-VOID OptionsMenu(OUT REFIT_MENU_ENTRY **ChosenEntry);
+VOID OptionsMenu(OUT REFIT_MENU_ENTRY **ChosenEntry, IN CHAR8 *LastChosenOS);
 VOID FreeScrollBar(VOID);
 INTN DrawTextXY(IN CHAR16 *Text, IN INTN XPos, IN INTN YPos, IN UINT8 XAlign);
 VOID DrawBCSText(IN CHAR16 *Text, IN INTN XPos, IN INTN YPos, IN UINT8 XAlign);
@@ -978,9 +988,9 @@ VOID DumpKernelAndKextPatches(KERNEL_AND_KEXT_PATCHES *Patches);
 
 //VOID FilterKextPatches(IN LOADER_ENTRY *Entry);
 
-#ifdef CHECK_FLAGS
+
 UINT32 EncodeOptions(CHAR16 *Options);
-#endif
+
 
 #define KERNEL_MAX_SIZE 40000000
 #if defined(FKERNELPATCH)

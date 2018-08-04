@@ -17,7 +17,7 @@ cd "$(dirname $0)"
 
 declare -r SOURCE_DIR="src"
 declare -r PO_DIR="../package/po"
-declare -r XCODE_MAJOR_VERSION="$(xcodebuild -version | sed -nE 's/^Xcode ([0-9]).*/\1/p')"
+declare -r XCODE_MAJOR_VERSION=$(xcodebuild -version | grep ^Xcode | awk '{print $2}' | sed -e 's/\..*//')
 
 # ========== OPTIONS ===========
 EXTRACT_ONLY=0

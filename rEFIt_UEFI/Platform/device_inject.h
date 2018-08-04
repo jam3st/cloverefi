@@ -35,7 +35,7 @@ typedef struct {
 
 typedef union {
 	pci_addr_t	bits;
-	UINT32	addr;
+	UINT32	    addr;
 } pci_dev_t;
 
 typedef struct pci_dt_t {
@@ -44,24 +44,25 @@ typedef struct pci_dt_t {
   EFI_HANDLE    DeviceHandle;
   UINT8*        regs;
 	pci_dev_t			dev;
-	
+
 	UINT16				vendor_id;
 	UINT16				device_id;
-	
+
 	union {
 		struct {
-			UINT16	vendor_id;
-			UINT16	device_id;
+			UINT16	  vendor_id;
+			UINT16	  device_id;
 		} subsys;
-		UINT32	subsys_id;
-	}subsys_id;
-	UINT8		revision;
-	UINT8		subclass;
-	UINT16				class_id;	
-	
+		UINT32	    subsys_id;
+	} subsys_id;
+	UINT8		      revision;
+	UINT8		      subclass;
+	UINT16				class_id;
+
 	struct pci_dt_t			*parent;
 	struct pci_dt_t			*children;
 	struct pci_dt_t			*next;
+  BOOLEAN             used;
 } pci_dt_t;
 
 #pragma pack(1)
@@ -132,11 +133,11 @@ struct DevPropDevice {
 	struct PCIDevPath  pci_dev_path[MAX_PCI_DEV_PATHS]; // = 0x01010600 func dev
 	struct DevicePathEnd path_end;						// = 0x7fff0400
 	UINT8 *data;
-	
+
 	// ------------------------
 	UINT8	 num_pci_devpaths;
 	struct DevPropString *string;
-	// ------------------------	
+	// ------------------------
 };
 
 typedef struct DevPropDevice  DevPropDevice;
@@ -160,7 +161,7 @@ extern UINT32 stringlength;
 
 DevPropString	*devprop_create_string(void);
 //DevPropDevice	*devprop_add_device(DevPropString *string, char *path);
-DevPropDevice	*devprop_add_device_pci(DevPropString *string, pci_dt_t *PciDt);
+DevPropDevice	*devprop_add_device_pci(DevPropString *string, pci_dt_t *PciDt, EFI_DEVICE_PATH_PROTOCOL *DevicePath);
 BOOLEAN			devprop_add_value(DevPropDevice *device, CHAR8 *nm, UINT8 *vl, UINTN len);
 CHAR8			*devprop_generate_string(DevPropString *string);
 VOID			devprop_free_string(DevPropString *string);

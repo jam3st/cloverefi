@@ -246,7 +246,7 @@ int tolower (int c)
 //
 
 /* Performs a quick sort */
-void qsort (void *base, size_t num, size_t width, int (*compare)(const void *, const void *))
+void qsort_ssl (void *base, size_t num, size_t width, int (*compare)(const void *, const void *))
 {
   VOID  *Buffer;
 
@@ -287,7 +287,7 @@ char *getenv (const char *varname)
 //
 
 /* Write formatted output using a pointer to a list of arguments */
-int vfprintf (FILE *stream, const char *format, VA_LIST arg)
+int vfprintf (FILE *stream, const char *format, va_list arg)
 {
   return 0;
 }

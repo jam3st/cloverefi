@@ -82,7 +82,7 @@
   UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
   #EfiFileLib|EmbeddedPkg/Library/EfiFileLib/EfiFileLib.inf
   #EblNetworkLib|EmbeddedPkg/Library/EblNetworkLib/EblNetworkLib.inf
-  #EblCmdLib|EmbeddedPkg/Library/EblCmdLibNull/EblCmdLibNull.inf  
+  #EblCmdLib|EmbeddedPkg/Library/EblCmdLibNull/EblCmdLibNull.inf
   FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
   UefiCpuLib|UefiCpuPkg/Library/BaseUefiCpuLib/BaseUefiCpuLib.inf
@@ -92,7 +92,7 @@
 !else
   OpensslLib|Clover/Library/OpensslLib/OpensslLibNull.inf
 !endif
-  
+
   #
   # Generic Modules
   #
@@ -128,7 +128,9 @@
   S3BootScriptLib|MdeModulePkg/Library/PiDxeS3BootScriptLib/DxeS3BootScriptLib.inf
   ExtractGuidedSectionLib|MdePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
   PlatformHookLib|MdeModulePkg/Library/BasePlatformHookLibNull/BasePlatformHookLibNull.inf
+!ifdef NO_CLOVER_SHELL
   ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+!endif
 
   #SerialPortLib|PcAtChipsetPkg/Library/SerialIoLib/SerialIoLib.inf
   SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
@@ -136,15 +138,15 @@
   IoApicLib|PcAtChipsetPkg/Library/BaseIoApicLib/BaseIoApicLib.inf
   LocalApicLib|UefiCpuPkg/Library/BaseXApicLib/BaseXApicLib.inf
   #LocalApicLib|UefiCpuPkg/Library/BaseXApicX2ApicLib/BaseXApicX2ApicLib.inf
-  
+
   #
   # To save size, use NULL library for DebugLib and ReportStatusCodeLib.
   # If need status code output, do library instance overriden as below DxeMain.inf does
   #
   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
-  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf  
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
   ReportStatusCodeLib|MdePkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
-  
+
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
   AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
@@ -154,6 +156,15 @@
   #
   MemLogLib|Clover/Library/MemLogLibDefault/MemLogLibDefault.inf
   VideoBiosPatchLib|Clover/Library/VideoBiosPatchLib/VideoBiosPatchLib.inf
+    
+!ifndef NO_CLOVER_SHELL
+  #Shell
+  ShellLib|Clover/ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  ShellCommandLib|Clover/ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
+  ShellCEntryLib|Clover/ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
+  HandleParsingLib|Clover/ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
+  BcfgCommandLib|Clover/ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
+!endif
 
 [LibraryClasses.common.DXE_CORE]
   HobLib|MdePkg/Library/DxeCoreHobLib/DxeCoreHobLib.inf
@@ -174,9 +185,9 @@
 [LibraryClasses.common.DXE_SMM_DRIVER]
   SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
   MemoryAllocationLib|MdePkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
-  
- 
-  
+
+
+
 ###################################################################################################
 #
 # Components Section - list of the modules and components that will be processed by compilation
@@ -274,7 +285,7 @@
     <LibraryClasses>
       DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
       BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
-      
+
       #NULL|IntelFrameworkModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
       NULL|Clover/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
   }
@@ -312,12 +323,12 @@
   #MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
   #Clover/PciBusDxe/PciBusDxe.inf
   MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
-  
+
   #DataHub
   #Clover/VBoxAppleSim/VBoxAppleSim.inf
   IntelFrameworkModulePkg/Universal/DataHubDxe/DataHubDxe.inf
   #IntelFrameworkModulePkg/Universal/DataHubStdErrDxe/DataHubStdErrDxe.inf
-  
+
   # foreign file system support
   Clover/Protocols/DriverOverride/DriverOverride.inf
   Clover/FileSystems/VBoxFsDxe/VBoxHfs.inf
@@ -336,6 +347,7 @@
   Clover/FileSystems/GrubFS/src/ISO9660.inf
   Clover/FileSystems/GrubFS/src/NTFS.inf
   Clover/FileSystems/GrubFS/src/UDF.inf
+  #Clover/FileSystems/GrubFS/src/ZFS.inf
   #Clover/FileSystems/GrubFS/src/UFS.inf
   #Clover/FileSystems/GrubFS/src/UFS2.inf
   #Clover/FileSystems/GrubFS/src/XFS.inf
@@ -351,7 +363,7 @@
   Clover/CloverEFI/BiosVideo/BiosVideo.inf
   #Clover/BiosVideoAuto/BiosVideo.inf
   Clover/LegacyBios/VideoDxe/VideoDxe.inf
-  Clover/LegacyBios/VideoDxe/VideoDxe2.inf
+  #Clover/LegacyBios/VideoDxe/VideoDxe2.inf
 
   # IDE/AHCI Support
 !ifdef USE_BIOS_BLOCKIO
@@ -395,7 +407,7 @@
   IntelFrameworkModulePkg/Bus/Isa/Ps2MouseAbsolutePointerDxe/Ps2MouseAbsolutePointerDxe.inf
   #IntelFrameworkModulePkg/Bus/Isa/Ps2MouseDxe/Ps2MouseDxe.inf
   Clover/Drivers/Ps2MouseDxe/Ps2MouseDxe.inf
- 
+
   # ACPI Support
   #MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
   Clover/CloverEFI/OsxAcpiTableDxe/AcpiTableDxe.inf
@@ -403,7 +415,10 @@
   #Clover/CloverEFI/OsxAcpiPlatformDxe/AcpiPlatformDxe.inf
 
   MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
-  MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
+  MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf {
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  }
   #MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
   Clover/Drivers/PartitionDxe/PartitionDxe.inf
 
@@ -436,6 +451,7 @@
   Clover/Protocols/HashServiceFix/HashServiceFix.inf
   Clover/Protocols/AppleKeyAggregator/AppleKeyAggregator.inf
   
+
 !ifdef DEBUG_ON_SERIAL_PORT
 
   Clover/Protocols/DumpUefiCalls/DumpUefiCalls.inf {
@@ -456,7 +472,7 @@
 
 
 !endif
-  
+
   # Drivers for Aptio loading - should go to Clover's /EFI/drivers64UEFI dir
   Clover/Protocols/OsxFatBinaryDrv/OsxFatBinaryDrv.inf
 
@@ -480,33 +496,61 @@
   #Clover/gptsync/gptsync.inf
   Clover/bdmesg_efi/bdmesg.inf
   
-!ifdef DEBUG_ON_SERIAL_PORT
+!ifndef NO_CLOVER_SHELL
+  Clover/ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+  Clover/ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
 
-	Clover/rEFIt_UEFI/refit.inf {
   
+  Clover/ShellPkg/Application/Shell/Shell.inf {
+    <PcdsFixedAtBuild>
+	  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
+	  gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
+	  gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|16000
+	!ifdef $(NO_SHELL_PROFILES)
+	  gEfiShellPkgTokenSpaceGuid.PcdShellProfileMask|0x00
+	!endif #$(NO_SHELL_PROFILES)
+
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+      PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
+      UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
+!ifndef $(NO_SHELL_PROFILES)
+      NULL|Clover/ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+      NULL|Clover/ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
+!ifdef $(INCLUDE_DP)
+      NULL|Clover/ShellPkg/Library/UefiDpLib/UefiDpLib.inf
+!endif #$(INCLUDE_DP)
+!ifdef $(INCLUDE_TFTP_COMMAND)
+      NULL|Clover/ShellPkg/Library/UefiShellTftpCommandLib/UefiShellTftpCommandLib.inf
+!endif #$(INCLUDE_TFTP_COMMAND)
+!endif #$(NO_SHELL_PROFILES)
+  }
+!endif
+
+
+!ifdef DEBUG_ON_SERIAL_PORT
+	Clover/rEFIt_UEFI/refit.inf {
 	#
      # Enable debug output.
      #
-
 	<PcdsFixedAtBuild>
- 
 		gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x07
- 
 		gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0xFFFFFFFF
-
 	<LibraryClasses>
- 
 		SerialPortLib|MdeModulePkg/Library/BaseSerialPortLib16550/BaseSerialPortLib16550.inf
-
 		DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-
 	DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
 	}
 !else
-
 	Clover/rEFIt_UEFI/refit.inf {
     <LibraryClasses>
-      BaseMemoryLib|MdePkg/Library/UefiMemoryLib/UefiMemoryLib.inf      
+      BaseMemoryLib|MdePkg/Library/UefiMemoryLib/UefiMemoryLib.inf
   }
 !endif
 
@@ -514,8 +558,9 @@
 #!ifndef CLANG
   Clover/OsxAptioFixDrv/OsxAptioFixDrv.inf
   Clover/OsxAptioFixDrv/OsxAptioFix2Drv.inf
+  Clover/OsxAptioFixDrv/OsxAptioFix3Drv.inf
   Clover/OsxLowMemFixDrv/OsxLowMemFixDrv.inf
-#!endif  
+#!endif
   #Clover/OsxAptioFixDrv/OsxAptioFixDrv.inf {
     #
     # Enable debug output.
@@ -532,9 +577,9 @@
 ###################################################################################################
 #
 # BuildOptions Section - Define the module specific tool chain flags that should be used as
-#                        the default flags for a module. These flags are appended to any 
-#                        standard flags that are defined by the build process. They can be 
-#                        applied for any modules or only those modules with the specific 
+#                        the default flags for a module. These flags are appended to any
+#                        standard flags that are defined by the build process. They can be
+#                        applied for any modules or only those modules with the specific
 #                        module style (EDK or EDKII) specified in [Components] section.
 #
 ###################################################################################################
@@ -553,39 +598,35 @@
 !ifdef DISABLE_USB_CONTROLLERS_WHEN_BLOCKIO
   DEFINE DISABLE_USB_CONTROLLERS = 1
 !endif
-!endif  
+!endif
 
 !ifdef DISABLE_USB_CONTROLLERS
   DEFINE NOUSB_FLAG = -DDISABLE_USB_SUPPORT
-!endif  
+!endif
 
 !ifdef DISABLE_USB_SUPPORT
   DEFINE NOUSB_FLAG = -DDISABLE_USB_SUPPORT
-!endif  
+!endif
 
 !ifdef DISABLE_UDMA_SUPPORT
   DEFINE NOUDMA_FLAG = -DDISABLE_UDMA_SUPPORT
-!endif  
+!endif
 
 # Slice: I propose this flag always true
 #!ifdef AMD_SUPPORT
   DEFINE AMD_FLAG = -DAMD_SUPPORT
-#!endif  
+#!endif
 
 !ifdef ENABLE_SECURE_BOOT
   DEFINE SECURE_BOOT_FLAG = -DENABLE_SECURE_BOOT
 !endif
 
-!ifdef ANDX86
+#!ifdef ANDX86
   DEFINE ANDX86_FLAG = -DANDX86
-!endif
+#!endif
 
 #!ifdef LODEPNG
   DEFINE LODEPNG_FLAG = -DLODEPNG
-#!endif
-
-#!ifdef CHECK_FLAGS
-  DEFINE CHECKS = -DCHECK_FLAGS
 #!endif
 
 !ifdef ENABLE_PS2MOUSE_LEGACYBOOT
@@ -597,7 +638,7 @@
 !endif
 
 !ifdef DISABLE_LTO
-	DEFINE DISABLE_LTO_FLAG = -fno-lto
+	DEFINE DISABLE_LTO_FLAG = -fno-lto -UUSING_LTO
 !endif
 
 
@@ -606,12 +647,12 @@ DEFINE EXIT_USBKB_FLAG = -DEXIT_USBKB
 !endif
 
 
-DEFINE BUILD_OPTIONS=-DMDEPKG_NDEBUG -DCLOVER_BUILD $(VBIOS_PATCH_CLOVEREFI_FLAG) $(ONLY_SATA_0_FLAG) $(BLOCKIO_FLAG) $(NOUSB_FLAG) $(AMD_FLAG) $(SECURE_BOOT_FLAG) $(LODEPNG_FLAG) $(ANDX86_FLAG) $(PS2MOUSE_LEGACYBOOT_FLAG) $(DEBUG_ON_SERIAL_PORT_FLAG) $(NOUDMA_FLAG) $(CHECKS) $(EXIT_USBKB_FLAG)
+DEFINE BUILD_OPTIONS=-DMDEPKG_NDEBUG -DCLOVER_BUILD $(VBIOS_PATCH_CLOVEREFI_FLAG) $(ONLY_SATA_0_FLAG) $(BLOCKIO_FLAG) $(NOUSB_FLAG) $(NOUDMA_FLAG) $(AMD_FLAG) $(SECURE_BOOT_FLAG) $(ANDX86_FLAG) $(LODEPNG_FLAG) $(PS2MOUSE_LEGACYBOOT_FLAG) $(DEBUG_ON_SERIAL_PORT_FLAG) $(EXIT_USBKB_FLAG)
 
   #MSFT:*_*_*_CC_FLAGS  = /FAcs /FR$(@R).SBR /wd4701 /wd4703 $(BUILD_OPTIONS)
   MSFT:*_*_*_CC_FLAGS  = /FAcs /FR$(@R).SBR $(BUILD_OPTIONS) -Dinline=__inline
-  
-  XCODE:*_*_*_CC_FLAGS = -fno-unwind-tables -Os $(BUILD_OPTIONS) -Wno-msvc-include $(DISABLE_LTO_FLAG)
+
+  XCODE:*_*_*_CC_FLAGS = -fno-unwind-tables -Wno-msvc-include -Os $(BUILD_OPTIONS) $(DISABLE_LTO_FLAG)
   GCC:*_*_*_CC_FLAGS   = $(BUILD_OPTIONS) $(DISABLE_LTO_FLAG)
   #-Wunused-but-set-variable
   # -Os -fno-omit-frame-pointer -maccumulate-outgoing-args

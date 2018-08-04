@@ -61,6 +61,10 @@
   libeg/libscreen.c
   libeg/lodepng.c
   libeg/text.c
+  libeg/FloatLib.c
+  libeg/nanosvg.c
+  libeg/nanosvgrast.c
+  libeg/VectorGraphics.c
   Platform/AcpiPatcher.c
 	Platform/ati_reg.h
 	Platform/AmlGenerator.c
@@ -199,9 +203,9 @@
   gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
   gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
   gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED  
-  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
-  
+  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED
+  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED
+
   gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
   gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
   gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
@@ -215,14 +219,14 @@
   gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
   gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
-  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES 
+  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
   gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
   gEfiStatusCodeRuntimeProtocolGuid				# PROTOCOL CONSUMES
   gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
   gEfiManagedNetworkServiceBindingProtocolGuid
-  
+
   gEfiAbsolutePointerProtocolGuid
   gEfiAcpiTableProtocolGuid
   gEfiEdidActiveProtocolGuid
@@ -246,7 +250,7 @@
   gAppleEventProtocolGuid
   gEfiOSInfoProtocolGuid
   gEfiKeyboardInfoProtocolGuid
-  
+
   gFSInjectProtocolGuid
   gMsgLogProtocolGuid
   gEfiPlatformDriverOverrideProtocolGuid
@@ -258,6 +262,7 @@
 [Pcd]
 
 [BuildOptions]
-  XCODE:*_*_*_CC_FLAGS = -fsigned-char -O2 -fno-common
-  GCC:*_*_*_CC_FLAGS = -Os -fno-omit-frame-pointer -maccumulate-outgoing-args
+#  XCODE:*_*_*_CC_FLAGS = -fsigned-char -O2 -fno-common
+  XCODE:*_*_*_CC_FLAGS = -fsigned-char -O2
+  GCC:*_*_*_CC_FLAGS = -std=c99 -Os -fno-omit-frame-pointer -maccumulate-outgoing-args
   MSFT:*_*_*_CC_FLAGS = /Os

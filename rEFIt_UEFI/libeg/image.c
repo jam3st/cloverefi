@@ -340,7 +340,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName,
     FreePool(FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
-    Buffer = (UINT8 *) AllocateZeroPool (BufferSize);
+    Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
         FileHandle->Close(FileHandle);
         return EFI_OUT_OF_RESOURCES;
@@ -383,12 +383,32 @@ EFI_STATUS egSaveFile(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *FileName,
   EFI_FILE_HANDLE     FileHandle;
   UINTN               BufferSize;
   BOOLEAN             CreateNew = TRUE;
+  CHAR16              *p = FileName + StrLen(FileName);
+  CHAR16              DirName[256];
+  UINTN               dirNameLen;
 
   if (BaseDir == NULL) {
     Status = egFindESP(&BaseDir);
     if (EFI_ERROR(Status))
       return Status;
   }
+    
+  // syscl - make directory if not exist
+  while (*p != L'\\' && p >= FileName) {
+    // find the first '\\' traverse from the end to head of FileName
+    p -= 1;
+  }
+  dirNameLen = p - FileName;
+  StrnCpy(DirName, FileName, dirNameLen);
+  Status = BaseDir->Open(BaseDir, &FileHandle, DirName,
+                           EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
+    
+  if (EFI_ERROR(Status)) {
+      // make dir
+      Status = BaseDir->Open(BaseDir, &FileHandle, DirName,
+                               EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+  }
+  // end of folder checking
 
   // Delete existing file if it exists
   Status = BaseDir->Open(BaseDir, &FileHandle, FileName,
@@ -410,8 +430,11 @@ EFI_STATUS egSaveFile(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *FileName,
   } else {
     //to write into existing file we must sure it size larger then our data
     EFI_FILE_INFO *Info = EfiLibFileInfo(FileHandle);
-    if (Info && Info->FileSize < FileDataLength) {
-      return EFI_NOT_FOUND;
+    if (Info) {
+      if (Info->FileSize < FileDataLength) {
+        return EFI_NOT_FOUND;
+      }
+      FreePool(Info);
     }
   }
 
@@ -561,7 +584,7 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN UINTN 
   // decode it
   NewImage = egDecodePNG(FileData, FileDataLength, TRUE);
   if (!NewImage) {
-    DBG("not png, try icns\n");
+//    DBG("not png, try icns\n");
     NewImage = egDecodeICNS(FileData, FileDataLength, IconSize, TRUE);
   }
   
@@ -970,7 +993,18 @@ EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN BOOLEAN W
   Error = eglodepng_decode((UINT8**) &PixelData, &Width, &Height, (CONST UINT8*) FileData, (UINTN) FileDataLength);
 
   if (Error) {
+    /*
+     * Error 28 incorrect PNG signature ok, because also called on ICNS files
+     */
+    if (Error != 28U) {
+      DBG("egDecodePNG(%p, %lu, %c): eglodepng_decode failed with error %lu\n",
+          FileData, FileDataLength, WantAlpha?'Y':'N', Error);
+    }
     return NULL;
+  }
+  if (!PixelData || Width > 4096U || Height > 4096U) {
+    DBG("egDecodePNG(%p, %lu, %c): eglodepng_decode returned suspect values, PixelData %p, Width %lu, Height %lu\n",
+        FileData, FileDataLength, WantAlpha?'Y':'N', PixelData, Width, Height);
   }
 
   NewImage = egCreateImage(Width, Height, WantAlpha);

@@ -250,7 +250,7 @@ VOID egFillImageArea(IN OUT EG_IMAGE *CompImage,
                      IN INTN AreaWidth, IN INTN AreaHeight,
                      IN EG_PIXEL *Color);
 VOID egComposeImage(IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN INTN PosX, IN INTN PosY);
-VOID PrepareFont();
+VOID PrepareFont(VOID);
 VOID egMeasureText(IN CHAR16 *Text, OUT INTN *Width, OUT INTN *Height);
 INTN egRenderText(IN CHAR16 *Text, IN OUT EG_IMAGE *CompImage, IN INTN PosX, IN INTN PosY, IN INTN Cursor);
 
@@ -264,6 +264,9 @@ VOID egTakeImage(IN EG_IMAGE *Image, INTN ScreenPosX, INTN ScreenPosY,
                  IN INTN AreaWidth, IN INTN AreaHeight);
 
 EFI_STATUS egScreenShot(VOID);
+
+VOID drawSVGtext(EG_IMAGE* TextBufferXY, VOID* fontSVG, const CHAR16* text);
+VOID testSVG(VOID);
 
 #endif /* __LIBEG_LIBEG_H__ */
 

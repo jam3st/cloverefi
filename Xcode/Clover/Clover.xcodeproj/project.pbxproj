@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		123B399B200E76DD00DC2ED9 /* BootFixes3.c in Sources */ = {isa = PBXBuildFile; fileRef = 123B3999200E76DD00DC2ED9 /* BootFixes3.c */; };
+		123B399E200E76EA00DC2ED9 /* OsxAptioFix3Drv.c in Sources */ = {isa = PBXBuildFile; fileRef = 123B399C200E76EA00DC2ED9 /* OsxAptioFix3Drv.c */; };
+		123B39A1200E770100DC2ED9 /* RTShims.nasm in Sources */ = {isa = PBXBuildFile; fileRef = 123B39A0200E770100DC2ED9 /* RTShims.nasm */; };
 		1288B5211A30CEFB007CBCEF /* Net.c in Sources */ = {isa = PBXBuildFile; fileRef = 1288B5201A30CEFB007CBCEF /* Net.c */; };
 		12A60F5A1DB610500068BF8B /* AppleImageCodec.c in Sources */ = {isa = PBXBuildFile; fileRef = 12A60F4E1DB610500068BF8B /* AppleImageCodec.c */; };
 		12A60F5B1DB610500068BF8B /* load_bmp.c in Sources */ = {isa = PBXBuildFile; fileRef = 12A60F501DB610500068BF8B /* load_bmp.c */; };
@@ -37,6 +40,10 @@
 		2C794E501A0AA85900D845B0 /* Lib.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C794D181A0AA85900D845B0 /* Lib.c */; };
 		2C794E511A0AA85900D845B0 /* NVRAMDebug.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C794D1A1A0AA85900D845B0 /* NVRAMDebug.c */; };
 		2C794E521A0AA85900D845B0 /* OsxLowMemFixDrv.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C794D1C1A0AA85900D845B0 /* OsxLowMemFixDrv.c */; };
+		A5582AFD21019EA6002CFB6E /* VectorGraphics.c in Sources */ = {isa = PBXBuildFile; fileRef = A5582AFC21019EA6002CFB6E /* VectorGraphics.c */; };
+		A5BF392720D9F17B004340E1 /* FloatLib.c in Sources */ = {isa = PBXBuildFile; fileRef = A5BF392620D9F17B004340E1 /* FloatLib.c */; };
+		A5BF392B20D9F18C004340E1 /* nanosvgrast.c in Sources */ = {isa = PBXBuildFile; fileRef = A5BF392920D9F18C004340E1 /* nanosvgrast.c */; };
+		A5BF392C20D9F18C004340E1 /* nanosvg.c in Sources */ = {isa = PBXBuildFile; fileRef = A5BF392A20D9F18C004340E1 /* nanosvg.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,6 +62,12 @@
 		12098EC21DC76858008B4AC3 /* hda.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hda.c; sourceTree = "<group>"; };
 		12098EC31DC76858008B4AC3 /* hda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hda.h; sourceTree = "<group>"; };
 		12344F581CAB9A5700318A6E /* AppleSmBios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppleSmBios.h; sourceTree = "<group>"; };
+		123B3999200E76DD00DC2ED9 /* BootFixes3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BootFixes3.c; sourceTree = "<group>"; };
+		123B399A200E76DD00DC2ED9 /* BootFixes3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BootFixes3.h; sourceTree = "<group>"; };
+		123B399C200E76EA00DC2ED9 /* OsxAptioFix3Drv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = OsxAptioFix3Drv.c; sourceTree = "<group>"; };
+		123B399D200E76EA00DC2ED9 /* OsxAptioFix3Drv.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OsxAptioFix3Drv.inf; sourceTree = "<group>"; };
+		123B399F200E76F600DC2ED9 /* RTShims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTShims.h; sourceTree = "<group>"; };
+		123B39A0200E770100DC2ED9 /* RTShims.nasm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.nasm; path = RTShims.nasm; sourceTree = "<group>"; };
 		1261513A1A15BBB000903E7B /* bootscreen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bootscreen.c; sourceTree = "<group>"; };
 		1261513B1A15BBB000903E7B /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = common.c; sourceTree = "<group>"; };
 		1261513C1A15BBB000903E7B /* entry_scan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = entry_scan.h; sourceTree = "<group>"; };
@@ -154,6 +167,7 @@
 		126151A01A15BBB000903E7B /* Version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
 		1261CBB51DB17AC200E26E00 /* AppleKeyState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppleKeyState.h; sourceTree = "<group>"; };
 		12676CCE1DB5624B00CFC57E /* OSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSInfo.h; sourceTree = "<group>"; };
+		1282C1EB20CE3149008C4D14 /* Patches_for_UDK2018 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Patches_for_UDK2018; path = ../../Patches_for_EDK2/Patches_for_UDK2018; sourceTree = "<group>"; };
 		1283F7EB1DF1D3900005BFF2 /* config-sample.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "config-sample.plist"; path = "../../CloverPackage/CloverV2/EFI/CLOVER/config-sample.plist"; sourceTree = "<group>"; };
 		1288B5201A30CEFB007CBCEF /* Net.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Net.c; sourceTree = "<group>"; };
 		12A60F4E1DB610500068BF8B /* AppleImageCodec.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = AppleImageCodec.c; sourceTree = "<group>"; };
@@ -816,7 +830,6 @@
 		12EA7C231E65FC3D00085A48 /* HashServiceFix.inf */ = {isa = PBXFileReference; lastKnownFileType = text; path = HashServiceFix.inf; sourceTree = "<group>"; };
 		12EA7C241E65FC3D00085A48 /* sha1.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sha1.c; sourceTree = "<group>"; };
 		12EA7C251E65FC3D00085A48 /* sha1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sha1.h; sourceTree = "<group>"; };
-		2C7949E31A0AA7F700D845B0 /* Clover */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Clover; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C794AB71A0AA85900D845B0 /* EfiFlashMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EfiFlashMap.h; sourceTree = "<group>"; };
 		2C794AB81A0AA85900D845B0 /* EfiLdrHandoff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EfiLdrHandoff.h; sourceTree = "<group>"; };
 		2C794AB91A0AA85900D845B0 /* FlashLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashLayout.h; sourceTree = "<group>"; };
@@ -891,6 +904,14 @@
 		2C794D1B1A0AA85900D845B0 /* NVRAMDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NVRAMDebug.h; sourceTree = "<group>"; };
 		2C794D1C1A0AA85900D845B0 /* OsxLowMemFixDrv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = OsxLowMemFixDrv.c; sourceTree = "<group>"; };
 		2C794D1D1A0AA85900D845B0 /* OsxLowMemFixDrv.inf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OsxLowMemFixDrv.inf; sourceTree = "<group>"; };
+		A511943C1F74B380005B0121 /* Patches_for_EDK2 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Patches_for_EDK2; path = ../../Patches_for_EDK2; sourceTree = "<group>"; };
+		A5582AFC21019EA6002CFB6E /* VectorGraphics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = VectorGraphics.c; sourceTree = "<group>"; };
+		A5BF392420D96FE3004340E1 /* Clover */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Clover; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5BF392520D9F17A004340E1 /* FloatLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FloatLib.h; sourceTree = "<group>"; };
+		A5BF392620D9F17B004340E1 /* FloatLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = FloatLib.c; sourceTree = "<group>"; };
+		A5BF392820D9F18C004340E1 /* nanosvg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nanosvg.h; sourceTree = "<group>"; };
+		A5BF392920D9F18C004340E1 /* nanosvgrast.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nanosvgrast.c; sourceTree = "<group>"; };
+		A5BF392A20D9F18C004340E1 /* nanosvg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nanosvg.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -963,6 +984,8 @@
 				1261514D1A15BBB000903E7B /* EfiFileLib.h */,
 				12B8EBBC1DDCE91200AC0A2C /* egemb_font.c */,
 				12B8EBBD1DDCE91200AC0A2C /* egemb_icons.c */,
+				A5BF392620D9F17B004340E1 /* FloatLib.c */,
+				A5BF392520D9F17A004340E1 /* FloatLib.h */,
 				1261514F1A15BBB000903E7B /* image.c */,
 				126151501A15BBB000903E7B /* libeg.h */,
 				126151511A15BBB000903E7B /* libegint.h */,
@@ -971,8 +994,12 @@
 				126151541A15BBB000903E7B /* load_icns.c */,
 				12E301581D5A413A00EED426 /* lodepng.c */,
 				12E301591D5A413A00EED426 /* lodepng.h */,
+				A5BF392A20D9F18C004340E1 /* nanosvg.c */,
+				A5BF392820D9F18C004340E1 /* nanosvg.h */,
+				A5BF392920D9F18C004340E1 /* nanosvgrast.c */,
 				12B8EBC11DDCEA2A00AC0A2C /* scroll_images.c */,
 				126151551A15BBB000903E7B /* text.c */,
+				A5582AFC21019EA6002CFB6E /* VectorGraphics.c */,
 			);
 			path = libeg;
 			sourceTree = "<group>";
@@ -2668,21 +2695,15 @@
 				2C794D1F1A0AA85900D845B0 /* CloverUEFI */,
 				12C86C531DE4272F00BF4974 /* Drivers */,
 				12C86CCA1DE428FB00BF4974 /* FileSystems */,
-				2C7949E41A0AA7F700D845B0 /* Products */,
 				12C874CC1DE42A3300BF4974 /* Clover.dsc */,
 				12C874CE1DE42A3C00BF4974 /* Clover.fdf */,
 				12C874CF1DE42A4200BF4974 /* CloverPkg.dec */,
 				1283F7EB1DF1D3900005BFF2 /* config-sample.plist */,
 				12C874D01DE42A4900BF4974 /* ebuild.sh */,
+				1282C1EB20CE3149008C4D14 /* Patches_for_UDK2018 */,
+				A511943C1F74B380005B0121 /* Patches_for_EDK2 */,
+				A5BF392420D96FE3004340E1 /* Clover */,
 			);
-			sourceTree = "<group>";
-		};
-		2C7949E41A0AA7F700D845B0 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2C7949E31A0AA7F700D845B0 /* Clover */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		2C794AC11A0AA85900D845B0 /* Guid */ = {
@@ -2829,6 +2850,7 @@
 				2C794D0E1A0AA85900D845B0 /* AsmFuncsX64.asm */,
 				2C794D0F1A0AA85900D845B0 /* AsmFuncsX64.nasm */,
 				2C794D101A0AA85900D845B0 /* AsmFuncsX64.S */,
+				123B39A0200E770100DC2ED9 /* RTShims.nasm */,
 				2C794D111A0AA85900D845B0 /* TestAsm32.asm */,
 			);
 			path = X64;
@@ -2842,6 +2864,8 @@
 				2C794CF61A0AA85900D845B0 /* BootArgs.h */,
 				2C794CF71A0AA85900D845B0 /* BootFixes.c */,
 				2C794CF81A0AA85900D845B0 /* BootFixes.h */,
+				123B3999200E76DD00DC2ED9 /* BootFixes3.c */,
+				123B399A200E76DD00DC2ED9 /* BootFixes3.h */,
 				2C794CF91A0AA85900D845B0 /* DecodedKernelCheck.c */,
 				2C794CFA1A0AA85900D845B0 /* DecodedKernelCheck.h */,
 				2C794CFD1A0AA85900D845B0 /* FlatDevTree */,
@@ -2853,8 +2877,11 @@
 				2C794D071A0AA85900D845B0 /* NVRAMDebug.h */,
 				2C794D081A0AA85900D845B0 /* OsxAptioFix2Drv.c */,
 				2C794D091A0AA85900D845B0 /* OsxAptioFix2Drv.inf */,
+				123B399C200E76EA00DC2ED9 /* OsxAptioFix3Drv.c */,
+				123B399D200E76EA00DC2ED9 /* OsxAptioFix3Drv.inf */,
 				2C794D0A1A0AA85900D845B0 /* OsxAptioFixDrv.c */,
 				2C794D0B1A0AA85900D845B0 /* OsxAptioFixDrv.inf */,
+				123B399F200E76F600DC2ED9 /* RTShims.h */,
 				2C794D0C1A0AA85900D845B0 /* VMem.c */,
 				2C794D0D1A0AA85900D845B0 /* VMem.h */,
 				2C794D121A0AA85900D845B0 /* X64 */,
@@ -2923,7 +2950,7 @@
 			);
 			name = Clover;
 			productName = Clover;
-			productReference = 2C7949E31A0AA7F700D845B0 /* Clover */;
+			productReference = A5BF392420D96FE3004340E1 /* Clover */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -2932,7 +2959,7 @@
 		2C7949DB1A0AA7F700D845B0 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = DMazar;
 				TargetAttributes = {
 					2C2A112C1A0ADBA200E9E558 = {
@@ -2951,7 +2978,7 @@
 				en,
 			);
 			mainGroup = 2C7949DA1A0AA7F700D845B0;
-			productRefGroup = 2C7949E41A0AA7F700D845B0 /* Products */;
+			productRefGroup = 2C7949DA1A0AA7F700D845B0;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -2966,8 +2993,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5BF392720D9F17B004340E1 /* FloatLib.c in Sources */,
 				2C794E401A0AA85900D845B0 /* Test.c in Sources */,
 				2C794E411A0AA85900D845B0 /* BootArgs.c in Sources */,
+				123B399B200E76DD00DC2ED9 /* BootFixes3.c in Sources */,
 				12B8EBBE1DDCE91200AC0A2C /* egemb_font.c in Sources */,
 				12B8EBC21DDCEA2A00AC0A2C /* scroll_images.c in Sources */,
 				2C794E431A0AA85900D845B0 /* DecodedKernelCheck.c in Sources */,
@@ -2982,20 +3011,25 @@
 				2C794E4C1A0AA85900D845B0 /* AsmFuncsX64.nasm in Sources */,
 				2C794E521A0AA85900D845B0 /* OsxLowMemFixDrv.c in Sources */,
 				2C794E4E1A0AA85900D845B0 /* TestAsm32.asm in Sources */,
+				A5BF392C20D9F18C004340E1 /* nanosvg.c in Sources */,
 				2C794E471A0AA85900D845B0 /* NVRAMDebug.c in Sources */,
 				2C794E4A1A0AA85900D845B0 /* VMem.c in Sources */,
 				2C794E3F1A0AA85900D845B0 /* FSInject.c in Sources */,
 				12B8EBBF1DDCE91200AC0A2C /* egemb_icons.c in Sources */,
+				A5BF392B20D9F18C004340E1 /* nanosvgrast.c in Sources */,
 				2C794E491A0AA85900D845B0 /* OsxAptioFixDrv.c in Sources */,
 				2C794E4B1A0AA85900D845B0 /* AsmFuncsX64.asm in Sources */,
 				2C794E441A0AA85900D845B0 /* device_tree.c in Sources */,
 				1288B5211A30CEFB007CBCEF /* Net.c in Sources */,
 				12A60F5A1DB610500068BF8B /* AppleImageCodec.c in Sources */,
 				12A60F5B1DB610500068BF8B /* load_bmp.c in Sources */,
+				A5582AFD21019EA6002CFB6E /* VectorGraphics.c in Sources */,
 				12A60F5C1DB610500068BF8B /* load_icns.c in Sources */,
 				12A60F5D1DB610500068BF8B /* picopng.c in Sources */,
 				12A60F5F1DB610500068BF8B /* SMCHelper.c in Sources */,
 				12AAF3A51DB75DC800A52B12 /* FirmwareVolume.c in Sources */,
+				123B399E200E76EA00DC2ED9 /* OsxAptioFix3Drv.c in Sources */,
+				123B39A1200E770100DC2ED9 /* RTShims.nasm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3037,19 +3071,29 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -3071,7 +3115,7 @@
 					$SRCROOT/../../../IntelFrameworkPkg/Include,
 					$SRCROOT/../../../IntelFrameworkModulePkg/Include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -3099,13 +3143,21 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
@@ -3113,6 +3165,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -3128,7 +3181,7 @@
 					$SRCROOT/../../../IntelFrameworkPkg/Include,
 					$SRCROOT/../../../IntelFrameworkModulePkg/Include,
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				OTHER_CFLAGS = (
 					"-fshort-wchar",

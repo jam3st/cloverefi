@@ -8,7 +8,7 @@
 # Nasm source version
 # here we can change source versions of tools
 #
-export NASM_VERSION=${NASM_VERSION:-2.13.01}
+export NASM_VERSION=${NASM_VERSION:-2.13.03}
 
 # Change PREFIX if you want nasm installed on different place
 #
@@ -91,10 +91,10 @@ fnDownloadNasm ()
 # Function: Download nasm source
 {
     cd "$DIR_DOWNLOADS"
-    local tarball="nasm-${NASM_VERSION}.tar.bz2"
+    local tarball="nasm-${NASM_VERSION}.tar.xz"
     if [[ ! -f "$tarball" ]]; then
         echo "Status: $tarball not found."
-        curl -f -o download.tmp --remote-name http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VERSION}/$tarball || exit 1
+        curl -f -o download.tmp --remote-name https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VERSION}/$tarball || exit 1
         mv download.tmp $tarball
     fi
 }
@@ -157,13 +157,13 @@ fnCompileNasm ()
     mountRamDisk
 
     # Extract the tarball
-    local NASM_DIR=$(fnExtract "nasm-${NASM_VERSION}.tar.bz2")
+    local NASM_DIR=$(fnExtract "nasm-${NASM_VERSION}.tar.xz")
 
     # Nasm build
     local cmd logfile
     cd "$NASM_DIR"
     echo "-  nasm-${NASM_VERSION} configure..."
-    cmd="${NASM_DIR}/configure $NASM_CONFIG"
+    cmd="LDFLAGS=\"-dead_strip\" ${NASM_DIR}/configure $NASM_CONFIG"
     logfile="$DIR_LOGS/nasm.configure.log.txt"
     echo "$cmd" > "$logfile"
     eval "$cmd" >> "$logfile" 2>&1
@@ -181,7 +181,7 @@ fnCompileNasm ()
         exit 1
     fi
     echo "-  nasm-${NASM_VERSION} installing..."
-    cmd="make install"
+    cmd="strip nasm ndisasm && make install"
     logfile="$DIR_LOGS/nasm.install.log.txt"
     echo "$cmd" > "$logfile"
     eval "$cmd" >> "$logfile" 2>&1

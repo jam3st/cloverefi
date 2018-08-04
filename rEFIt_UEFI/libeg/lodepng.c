@@ -39,6 +39,7 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/BaseLib.h>
+#include <Library/MemoryAllocationLib.h>
 
 // Floating point operations are used here, this must be defined to prevent linker error
 #ifndef ENABLE_SECURE_BOOT
@@ -50,87 +51,40 @@ CONST INT32 _fltused = 0;
 extern void qsort(void *a, size_t n, size_t es, int (*cmp)(const void *, const void *));
 */
 // Custom internal allocators for UEFI
+// rewrite by RehabMan
 void* lodepng_malloc(size_t size)
 {
-  void* pool;
-  EFI_STATUS Status = gBS->AllocatePool(EfiBootServicesData, size, &pool);
-  if (EFI_ERROR(Status))
-      return NULL;
-  return pool;
+  size_t* p = AllocateZeroPool(size+sizeof(size_t));
+  if (!p) {
+    return NULL;
+  }
+  *p = size+sizeof(size_t);
+  return p+1;
 }
 
 void lodepng_free(void* ptr)
 {
   if (ptr)
-      gBS->FreePool(ptr);
+    FreePool((size_t*)ptr-1);
 }
 
 void* lodepng_realloc(void* ptr, size_t new_size)
 {
-    void* new_ptr;
-    if (!ptr) {
-        // NULL pointer means just do malloc
-        return lodepng_malloc(new_size);
-    } else if (new_size == 0) {
-        // Non-NULL pointer and zero size means just do free
-        lodepng_free( ptr );
-    } else {
-        new_ptr = lodepng_malloc(new_size);
-        if (new_ptr != NULL) {
-            gBS->CopyMem(new_ptr, ptr, new_size);
-            lodepng_free (ptr);
-            return new_ptr;
-        }
-    }
+  if (!ptr) {
+    // NULL pointer means just do malloc
+    return lodepng_malloc(new_size);
+  }
+  size_t* old_p = (size_t*)ptr-1;
+  size_t* new_p = ReallocatePool(*old_p, new_size+sizeof(size_t), old_p);
+  if (!new_p) {
     return NULL;
+  }
+  *new_p = new_size+sizeof(size_t);
+  return new_p+1;
 }
 
-#if defined(_MSC_VER)
-// Internal memset and memcpy implementations
-void *memcpy(void* dst, void* src, size_t size) {
-    gBS->CopyMem(dst, src, size);
-    return dst;
-}
-
-void * memset(void *str, unsigned char c, size_t n) {
-    gBS->SetMem(str, n, c);
-    return str;
-}
-
-#if defined(MDE_CPU_IA32)
-// Copied from microsoft research
-void _allshl(void)
-{
-    __asm {
-// Handle shifts of 64 or more bits (all get 0)
-        cmp     cl, 64
-        jae     short RETZERO
-// Handle shifts of between 0 and 31 bits
-        cmp     cl, 32
-        jae     short MORE32
-        shld    edx,eax,cl
-        shl     eax,cl
-        ret
-// Handle shifts of between 32 and 63 bits
-MORE32:
-        mov     edx,eax
-        xor     eax,eax
-        and     cl,31
-        shl     edx,cl
-        ret
-// return 0 in edx:eax
-RETZERO:
-        xor     eax,eax
-        xor     edx,edx
-        ret
-    }
-}
-#endif
-#else
 #define memcpy(dest,source,count) gBS->CopyMem(dest,source,(UINTN)(count))
 #define memset(dest,ch,count)     gBS->SetMem(dest,(UINTN)(count),(UINT8)(ch))
-#endif
-
 
 
 //MODSNI ^
@@ -918,7 +872,8 @@ unsigned lodepng_huffman_code_lengths(unsigned* lengths, const unsigned* frequen
     }
   }
 
-  for(i = 0; i != numcodes; ++i) lengths[i] = 0;
+  //for(i = 0; i != numcodes; ++i) lengths[i] = 0;
+  ZeroMem(lengths, sizeof(unsigned) * numcodes);
 
   /*ensure at least two present symbols. There should be at least one symbol
   according to RFC 1951 section 3.2.7. Some decoders incorrectly require two. To
@@ -6343,7 +6298,13 @@ unsigned eglodepng_encode(unsigned char** out, size_t* outsize, const unsigned c
 #ifdef LODEPNG_COMPILE_DECODER
 unsigned eglodepng_decode(unsigned char** out, size_t* w, size_t* h, const unsigned char* in, size_t insize)
 {
-  return lodepng_decode32(out, (unsigned*)w, (unsigned*)h, in, insize);
+  unsigned _w, _h, _r;
+  _r = lodepng_decode32(out, &_w, &_h, in, insize);
+  if (!_r) {
+    if (w) *w = (size_t) _w;
+    if (h) *h = (size_t) _h;
+  }
+  return _r;
 }
 // EXPORT FOR CLOVER <==
 

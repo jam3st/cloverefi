@@ -65,6 +65,8 @@
 #define BOOT_LOADER_PATH L"\\EFI\\BOOT\\BOOTIA32.efi"
 #endif
 
+extern LOADER_ENTRY *SubMenuKextInjectMgmt(LOADER_ENTRY *Entry);
+
 // Linux loader path data
 typedef struct LINUX_PATH_DATA
 {
@@ -89,6 +91,9 @@ STATIC LINUX_PATH_DATA LinuxEntryData[] = {
   { L"\\EFI\\opensuse\\grubx64.efi", L"OpenSuse EFI boot menu", L"suse,linux", "openSUSE" },
   { L"\\EFI\\arch\\grubx64.efi", L"ArchLinux EFI boot menu", L"arch,linux" },
   { L"\\EFI\\arch_grub\\grubx64.efi", L"ArchLinux EFI boot menu", L"arch,linux" },
+  { L"\\EFI\\ORACLE\\grubx64.efi", L"Oracle Solaris EFI boot menu", L"solaris,linux", "Solaris" },
+  { L"\\EFI\\Endless\\grubx64.efi", L"EndlessOS EFI boot menu", L"endless,linux", "EndlessOS" },
+  { L"\\EFI\\antergos_grub\\grubx64.efi", L"Antergos﻿ EFI boot menu", L"antergos,linux", "Antergos﻿" },
 #else
   { L"\\EFI\\grub\\grub.efi", L"Grub EFI boot menu", L"grub,linux" },
   { L"\\EFI\\Gentoo\\grub.efi", L"Gentoo EFI boot menu", L"gentoo,linux", "Gentoo" },
@@ -103,6 +108,9 @@ STATIC LINUX_PATH_DATA LinuxEntryData[] = {
   { L"\\EFI\\opensuse\\grub.efi", L"OpenSuse EFI boot menu", L"suse,linux", "openSUSE" },
   { L"\\EFI\\arch\\grub.efi", L"ArchLinux EFI boot menu", L"arch,linux" },
   { L"\\EFI\\arch_grub\\grub.efi", L"ArchLinux EFI boot menu", L"arch,linux" },
+  { L"\\EFI\\ORACLE\\grub.efi", L"Oracle Solaris EFI boot menu", L"solaris,linux", "Solaris" },
+  { L"\\EFI\\Endless\\grub.efi", L"EndlessOS EFI boot menu", L"endless,linux", "EndlessOS" },
+  { L"\\EFI\\antergos_grub\\grub.efi", L"Antergos﻿ EFI boot menu", L"antergos,linux", "Antergos﻿" },
 #endif
   { L"\\EFI\\SuSe\\elilo.efi", L"OpenSuse EFI boot menu", L"suse,linux" },
 };
@@ -123,9 +131,10 @@ STATIC ANDX86_PATH_DATA AndroidEntryData[] = {
 #if defined(MDE_CPU_X64)
   //{ L"\\EFI\\boot\\grubx64.efi", L"Grub", L"grub,linux" },
   //{ L"\\EFI\\boot\\bootx64.efi", L"Grub", L"grub,linux" },
-  { L"\\EFI\\remixos\\grubx64.efi", L"Remix",   L"remix,grub,linux",    { L"\\isolinux\\isolinux.bin", L"\\initrd.img", L"\\kernel" } },
-  { L"\\EFI\\boot\\grubx64.efi",    L"Phoenix", L"phoenix,grub,linux",  { L"\\phoenix\\kernel", L"\\phoenix\\initrd.img", L"\\phoenix\\ramdisk.img" } },
-  { L"\\EFI\\boot\\bootx64.efi",    L"Chrome",  L"chrome,grub,linux",   { L"\\syslinux\\vmlinuz.A", L"\\syslinux\\vmlinuz.B", L"\\syslinux\\ldlinux.sys"} },
+  { L"\\EFI\\remixos\\grubx64.efi",         L"Remix",     L"remix,grub,linux",   { L"\\isolinux\\isolinux.bin", L"\\initrd.img", L"\\kernel" } },
+  { L"\\EFI\\PhoenixOS\\boot\\grubx64.efi", L"PhoenixOS", L"phoenix,grub,linux", { L"\\EFI\\PhoenixOS\\boot\\efi.img", L"\\EFI\\PhoenixOS\\initrd.img", L"\\EFI\\PhoenixOS\\kernel" } },
+  { L"\\EFI\\boot\\grubx64.efi",            L"Phoenix",   L"phoenix,grub,linux", { L"\\phoenix\\kernel", L"\\phoenix\\initrd.img", L"\\phoenix\\ramdisk.img" } },
+  { L"\\EFI\\boot\\bootx64.efi",            L"Chrome",    L"chrome,grub,linux",  { L"\\syslinux\\vmlinuz.A", L"\\syslinux\\vmlinuz.B", L"\\syslinux\\ldlinux.sys"} },
 /*
 #else
 */
@@ -134,14 +143,19 @@ STATIC ANDX86_PATH_DATA AndroidEntryData[] = {
 STATIC CONST UINTN AndroidEntryDataCount = (sizeof(AndroidEntryData) / sizeof(ANDX86_PATH_DATA));
 #endif
 
+CHAR16  *PaperBoot   = L"\\com.apple.boot.P\\boot.efi";
+CHAR16  *RockBoot    = L"\\com.apple.boot.R\\boot.efi";
+CHAR16  *ScissorBoot = L"\\com.apple.boot.S\\boot.efi";
+
 // OS X installer paths
 STATIC CHAR16 *OSXInstallerPaths[] = {
-  L"\\Mac OS X Install Data\\boot.efi",
-  L"\\macOS Install Data\\boot.efi",
-  L"\\macOS Install Data\\Locked Files\\Boot Files\\boot.efi",
-  L"\\OS X Install Data\\boot.efi",
-  L"\\.IABootFiles\\boot.efi"
+  L"\\.IABootFiles\\boot.efi", // 10.9 - 10.13.3
+  L"\\Mac OS X Install Data\\boot.efi", // 10.7
+  L"\\OS X Install Data\\boot.efi", // 10.8 - 10.11
+  L"\\macOS Install Data\\boot.efi", // 10.12 - 10.12.3
+  L"\\macOS Install Data\\Locked Files\\Boot Files\\boot.efi" // 10.12.4+
 };
+
 STATIC CONST UINTN OSXInstallerPathsCount = (sizeof(OSXInstallerPaths) / sizeof(CHAR16 *));
 
 STATIC INTN TimeCmp(IN EFI_TIME *Time1,
@@ -186,11 +200,14 @@ UINT8 GetOSTypeFromPath(IN CHAR16 *Path)
   }
   if (StriCmp(Path, MACOSX_LOADER_PATH) == 0) {
     return OSTYPE_OSX;
-  } else if ((StriCmp(Path, L"\\OS X Install Data\\boot.efi") == 0) ||
-             (StriCmp(Path, L"\\Mac OS X Install Data\\boot.efi") == 0) ||
-             (StriCmp(Path, L"\\macOS Install Data\\boot.efi") == 0) ||
-             (StriCmp(Path, L"\\macOS Install Data\\Locked Files\\Boot Files\\boot.efi") == 0) ||
-             (StriCmp(Path, L"\\.IABootFiles\\boot.efi") == 0)) {
+  } else if ((StriCmp(Path, OSXInstallerPaths[0]) == 0) ||
+             (StriCmp(Path, OSXInstallerPaths[1]) == 0) ||
+             (StriCmp(Path, OSXInstallerPaths[2]) == 0) ||
+             (StriCmp(Path, OSXInstallerPaths[3]) == 0) ||
+             (StriCmp(Path, OSXInstallerPaths[4]) == 0) ||
+             (StriCmp(Path, RockBoot) == 0) || (StriCmp(Path, PaperBoot) == 0) || (StriCmp(Path, ScissorBoot) == 0) ||
+             (!StriCmp(Path, L"\\.IABootFiles\\boot.efi") && StriCmp(Path, L"\\.IAPhysicalMedia") && StriCmp(Path, MACOSX_LOADER_PATH))
+             ) {
     return OSTYPE_OSX_INSTALLER;
   } else if (StriCmp(Path, L"\\com.apple.recovery.boot\\boot.efi") == 0) {
     return OSTYPE_RECOVERY;
@@ -680,6 +697,7 @@ STATIC VOID AddDefaultMenu(IN LOADER_ENTRY *Entry)
   UINT64            VolumeSize;
   EFI_GUID          *Guid = NULL;
   BOOLEAN           KernelIs64BitOnly;
+  UINT64            os_version = AsciiOSVersionToUint64(Entry->OSVersion);
 
   if (Entry == NULL) {
     return;
@@ -697,7 +715,7 @@ STATIC VOID AddDefaultMenu(IN LOADER_ENTRY *Entry)
 
   // create the submenu
   SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-  SubScreen->Title = PoolPrint(L"Boot Options for %s on %s", Entry->me.Title, Entry->VolName);
+  SubScreen->Title = PoolPrint(L"Options for %s", Entry->me.Title, Entry->VolName);
   SubScreen->TitleImage = Entry->me.Image;
   SubScreen->ID = Entry->LoaderType + 20;
   //  DBG("get anime for os=%d\n", SubScreen->ID);
@@ -713,60 +731,85 @@ STATIC VOID AddDefaultMenu(IN LOADER_ENTRY *Entry)
     FreePool(GuidStr);
   }
   AddMenuInfoLine(SubScreen, PoolPrint(L"Options: %s", Entry->LoadOptions));
-/*
-  // default entry
-  SubEntry = DuplicateLoaderEntry(Entry);
-  if (SubEntry) {
-    SubEntry->me.Title = (Entry->LoaderType == OSTYPE_OSX ||
-                          Entry->LoaderType == OSTYPE_OSX_INSTALLER ||
-                          Entry->LoaderType == OSTYPE_RECOVERY) ?
-      L"Boot macOS" : PoolPrint(L"Run %s", FileName);
-    AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-  }
- */
   // loader-specific submenu entries
-  if (Entry->LoaderType == OSTYPE_OSX || Entry->LoaderType == OSTYPE_OSX_INSTALLER || Entry->LoaderType == OSTYPE_RECOVERY) { // entries for Mac OS X
-    AddMenuInfoLine(SubScreen, PoolPrint(L"macOS %a", Entry->OSVersion));
-#ifdef CHECK_FLAGS
-    //AddMenuCheck(SubScreen, "Hibernate wake",       OSFLAG_HIBERNATED, 69);
-    //    AddMenuCheck(SubScreen, "Cancel hibernate wake", OSFLAG_NOHIBERNATED, 69);
-/*    SubEntry = DuplicateLoaderEntry(Entry);
-    if (SubEntry) {
-      SubEntry->me.Title        = L"Force hibernate wake";
-      SubEntry->Flags           = OSFLAG_SET(SubEntry->Flags, OSFLAG_HIBERNATED);
-      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+  if (Entry->LoaderType == OSTYPE_OSX ||
+      Entry->LoaderType == OSTYPE_OSX_INSTALLER ||
+      Entry->LoaderType == OSTYPE_RECOVERY) { // entries for Mac OS X
+    if (os_version < AsciiOSVersionToUint64("10.8")) {
+      AddMenuInfoLine(SubScreen, PoolPrint(L"Mac OS X: %a", Entry->OSVersion));
+    } else if (os_version < AsciiOSVersionToUint64("10.12")) {
+      AddMenuInfoLine(SubScreen, PoolPrint(L"OS X: %a", Entry->OSVersion));
+    } else {
+      AddMenuInfoLine(SubScreen, PoolPrint(L"macOS: %a", Entry->OSVersion));
     }
- */
+
+    if (OSFLAG_ISSET(Entry->Flags, OSFLAG_HIBERNATED)) {
+      SubEntry = DuplicateLoaderEntry(Entry);
+      if (SubEntry) {
+        SubEntry->me.Title  = L"Cancel hibernate wake";
+        SubEntry->Flags     = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_HIBERNATED);
+        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+      }
+    }
+
     SubEntry = DuplicateLoaderEntry(Entry);
     if (SubEntry) {
-      SubEntry->me.Title        = L"Cancel hibernate wake";
-      SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_HIBERNATED);
+      if (os_version < AsciiOSVersionToUint64("10.8")) {
+        SubEntry->me.Title  = L"Boot Mac OS X with selected options";
+      } else if (os_version < AsciiOSVersionToUint64("10.12")) {
+        SubEntry->me.Title  = L"Boot OS X with selected options";
+      } else {
+        SubEntry->me.Title  = L"Boot macOS with selected options";
+      }
+      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+    }
+    
+    SubEntry = DuplicateLoaderEntry(Entry);
+    if (SubEntry) {
+      if (os_version < AsciiOSVersionToUint64("10.8")) {
+        SubEntry->me.Title  = L"Boot Mac OS X with injected kexts";
+      } else if (os_version < AsciiOSVersionToUint64("10.12")) {
+        SubEntry->me.Title  = L"Boot OS X with injected kexts";
+      } else {
+        SubEntry->me.Title  = L"Boot macOS with injected kexts";
+      }
+      SubEntry->Flags       = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_CHECKFAKESMC);
+      SubEntry->Flags       = OSFLAG_SET(SubEntry->Flags, OSFLAG_WITHKEXTS);
       AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
     }
     SubEntry = DuplicateLoaderEntry(Entry);
     if (SubEntry) {
-      SubEntry->me.Title        = L"Boot macOS with selected options";
-      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-    }
-    SubEntry = DuplicateLoaderEntry(Entry);
-    if (SubEntry) {
-      SubEntry->me.Title        = OSFLAG_ISSET(SubEntry->Flags, OSFLAG_WITHKEXTS) ?
-      L"Boot macOS without injected kexts" :
-      L"Boot macOS with injected kexts";
-      SubEntry->Flags           = OSFLAG_TOGGLE(SubEntry->Flags, OSFLAG_WITHKEXTS);
-      SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
+      if (os_version < AsciiOSVersionToUint64("10.8")) {
+        SubEntry->me.Title  = L"Boot Mac OS X without injected kexts";
+      } else if (os_version < AsciiOSVersionToUint64("10.12")) {
+        SubEntry->me.Title  = L"Boot OS X without injected kexts";
+      } else {
+        SubEntry->me.Title  = L"Boot macOS without injected kexts";
+      }
+      SubEntry->Flags       = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_CHECKFAKESMC);
+      SubEntry->Flags       = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_WITHKEXTS);
       AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
     }
 
-    
-//    AddMenuCheck(SubScreen, "Without caches",       OSFLAG_NOCACHES, 69);
-//    AddMenuCheck(SubScreen, "With injected kexts",  OSFLAG_WITHKEXTS, 69);
+    AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubMenuKextInjectMgmt(Entry));
     AddMenuInfo(SubScreen, L"=== boot-args ===");
     if (!KernelIs64BitOnly) {
-      AddMenuCheck(SubScreen, "macOS 32bit",          OPT_I386, 68);
-      AddMenuCheck(SubScreen, "macOS 64bit",          OPT_X64,  68);
+      if (os_version < AsciiOSVersionToUint64("10.8")) {
+        AddMenuCheck(SubScreen, "Mac OS X 32bit",   OPT_I386, 68);
+        AddMenuCheck(SubScreen, "Mac OS X 64bit",   OPT_X64,  68);
+      } else if (os_version < AsciiOSVersionToUint64("10.12")) {
+        AddMenuCheck(SubScreen, "OS X 32bit",       OPT_I386, 68);
+        AddMenuCheck(SubScreen, "OS X 64bit",       OPT_X64,  68);
+      } else {
+        AddMenuCheck(SubScreen, "macOS 32bit",      OPT_I386, 68);
+        AddMenuCheck(SubScreen, "macOS 64bit",      OPT_X64,  68);
+      }
     }
     AddMenuCheck(SubScreen, "Verbose (-v)",                               OPT_VERBOSE, 68);
+    // No Caches option works on 10.6 - 10.9
+    if (os_version < AsciiOSVersionToUint64("10.10")) {
+      AddMenuCheck(SubScreen, "Without caches (-f)",                        OPT_NOCACHES, 68);
+    }
     AddMenuCheck(SubScreen, "Single User (-s)",                           OPT_SINGLE_USER, 68);
     AddMenuCheck(SubScreen, "Safe Mode (-x)",                             OPT_SAFE, 68);
     AddMenuCheck(SubScreen, "Disable KASLR (slide=0)",                    OPT_SLIDE, 68);
@@ -774,204 +817,20 @@ STATIC VOID AddDefaultMenu(IN LOADER_ENTRY *Entry)
     AddMenuCheck(SubScreen, "Use Nvidia WEB drivers (nvda_drv=1)",        OPT_NVWEBON, 68);
     AddMenuCheck(SubScreen, "Disable PowerNap (darkwake=0)",              OPT_POWERNAPOFF, 68);
     AddMenuCheck(SubScreen, "Use XNU CPUPM (-xcpm)",                      OPT_XCPM, 68);
-    AddMenuCheck(SubScreen, "Disable Intel Idle Mode (-gux_no_idle)",     OPT_GNOIDLE, 68);
-    AddMenuCheck(SubScreen, "Sleep Uses Shutdown (-gux_nosleep)",         OPT_GNOSLEEP, 68);
-    AddMenuCheck(SubScreen, "Force No Msi Int (-gux_nomsi)",              OPT_GNOMSI, 68);
-    AddMenuCheck(SubScreen, "EHC manage USB2 ports (-gux_defer_usb2)",    OPT_EHCUSB, 68);
+//    AddMenuCheck(SubScreen, "Disable Intel Idle Mode (-gux_no_idle)",     OPT_GNOIDLE, 68);
+//    AddMenuCheck(SubScreen, "Sleep Uses Shutdown (-gux_nosleep)",         OPT_GNOSLEEP, 68);
+//    AddMenuCheck(SubScreen, "Force No Msi Int (-gux_nomsi)",              OPT_GNOMSI, 68);
+//    AddMenuCheck(SubScreen, "EHC manage USB2 ports (-gux_defer_usb2)",    OPT_EHCUSB, 68);
     AddMenuCheck(SubScreen, "Keep symbols on panic (keepsyms=1)",         OPT_KEEPSYMS, 68);
     AddMenuCheck(SubScreen, "Don't reboot on panic (debug=0x100)",        OPT_DEBUG, 68);
     AddMenuCheck(SubScreen, "Debug kexts (kextlog=0xffff)",               OPT_KEXTLOG, 68);
-    AddMenuCheck(SubScreen, "Disable AppleALC (-alcoff)",                 OPT_APPLEALC, 68);
-    AddMenuCheck(SubScreen, "Disable Shiki (-shikioff)",                  OPT_SHIKI, 68);
+//    AddMenuCheck(SubScreen, "Disable AppleALC (-alcoff)",                 OPT_APPLEALC, 68);
+//    AddMenuCheck(SubScreen, "Disable Shiki (-shikioff)",                  OPT_SHIKI, 68);
 
     if (gSettings.CsrActiveConfig == 0) {
       AddMenuCheck(SubScreen, "No SIP", OSFLAG_NOSIP, 69);
     }
     
-#else
-#if defined(MDE_CPU_X64)
-    if (!KernelIs64BitOnly) {
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"arch=x86_64");
-        SubEntry->me.Title        = L"Boot macOS  (64-bit)";
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-    }
-#endif
-    if (!KernelIs64BitOnly) {
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->me.Title        = L"Boot macOS  (32-bit)";
-        SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"arch=i386");
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-    }
-    SubEntry = DuplicateLoaderEntry(Entry);
-    if (SubEntry) {
-      SubEntry->me.Title        = L"Force hibernate wake";
-      SubEntry->Flags           = OSFLAG_SET(SubEntry->Flags, OSFLAG_HIBERNATED);
-      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-    }
-    SubEntry = DuplicateLoaderEntry(Entry);
-    if (SubEntry) {
-      SubEntry->me.Title        = L"Cancel hibernate wake";
-      SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_HIBERNATED);
-      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-    }
-
-    if (!(GlobalConfig.DisableFlags & HIDEUI_FLAG_SINGLEUSER)) {
-
-#if defined(MDE_CPU_X64)
-      if (KernelIs64BitOnly) {
-        SubEntry = DuplicateLoaderEntry(Entry);
-        if (SubEntry) {
-          SubEntry->me.Title        = L"Boot macOS  in verbose mode";
-          SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_USEGRAPHICS);
-          SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        if (SubEntry->OSVersion && (AsciiOSVersionToUint64(SubEntry->OSVersion) >= AsciiOSVersionToUint64("10.11"))) {
-          SubEntry = DuplicateLoaderEntry(Entry);
-          if (SubEntry) {
-            SubEntry->me.Title        = L"Boot macOS  with No SIP";
-            SubEntry->Flags           = OSFLAG_SET(SubEntry->Flags, OSFLAG_NOSIP);
-            //SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-          }
-        }
-      } else {
-        SubEntry = DuplicateLoaderEntry(Entry);
-        if (SubEntry) {
-          SubEntry->me.Title        = L"Boot macOS  in verbose mode (64bit)";
-          SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_USEGRAPHICS);
-          TempOptions = AddLoadOption(SubEntry->LoadOptions, L"-v");
-          SubEntry->LoadOptions     = AddLoadOption(TempOptions, L"arch=x86_64");
-          FreePool(TempOptions);
-          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-      }
-
-#endif
-
-      if (!KernelIs64BitOnly) {
-        SubEntry = DuplicateLoaderEntry(Entry);
-        if (SubEntry) {
-          SubEntry->me.Title        = L"Boot macOS in verbose mode (32-bit)";
-          SubEntry->Flags           = OSFLAG_SET(SubEntry->Flags, OSFLAG_USEGRAPHICS);
-          TempOptions = AddLoadOption(SubEntry->LoadOptions, L"-v");
-          SubEntry->LoadOptions     = AddLoadOption(TempOptions, L"arch=i386");
-          FreePool(TempOptions);
-          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-      }
-
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->me.Title        = L"Boot macOS in safe mode";
-        SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_USEGRAPHICS);
-        TempOptions = AddLoadOption(SubEntry->LoadOptions, L"-v");
-        SubEntry->LoadOptions     = AddLoadOption(TempOptions, L"-x");
-        FreePool(TempOptions);
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->me.Title        = L"Boot macOS in single user verbose mode";
-        SubEntry->Flags           = OSFLAG_UNSET(SubEntry->Flags, OSFLAG_USEGRAPHICS);
-        TempOptions = AddLoadOption(SubEntry->LoadOptions, L"-v");
-        SubEntry->LoadOptions     = AddLoadOption(TempOptions, L"-s");
-        FreePool(TempOptions);
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->me.Title        = OSFLAG_ISSET(SubEntry->Flags, OSFLAG_NOCACHES) ?
-        L"Boot macOS with caches" :
-        L"Boot macOS without caches";
-        SubEntry->Flags           = OSFLAG_TOGGLE(SubEntry->Flags, OSFLAG_NOCACHES);
-        SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-
-      SubEntry = DuplicateLoaderEntry(Entry);
-      if (SubEntry) {
-        SubEntry->me.Title        = OSFLAG_ISSET(SubEntry->Flags, OSFLAG_WITHKEXTS) ?
-        L"Boot macOS without injected kexts" :
-        L"Boot macOS with injected kexts";
-        SubEntry->Flags           = OSFLAG_TOGGLE(SubEntry->Flags, OSFLAG_WITHKEXTS);
-        SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-        AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-      }
-
-      if (OSFLAG_ISSET(Entry->Flags, OSFLAG_WITHKEXTS))
-      {
-        if (OSFLAG_ISSET(Entry->Flags, OSFLAG_NOCACHES))
-        {
-          SubEntry = DuplicateLoaderEntry(Entry);
-          if (SubEntry) {
-            SubEntry->me.Title        = L"Boot macOS with caches and without injected kexts";
-            SubEntry->Flags           = OSFLAG_UNSET(OSFLAG_UNSET(SubEntry->Flags, OSFLAG_NOCACHES), OSFLAG_WITHKEXTS);
-            SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-          }
-        }
-        else
-        {
-          SubEntry = DuplicateLoaderEntry(Entry);
-          if (SubEntry) {
-            SubEntry->me.Title        = L"Boot macOS without caches and without injected kexts";
-            SubEntry->Flags           = OSFLAG_UNSET(OSFLAG_SET(SubEntry->Flags, OSFLAG_NOCACHES), OSFLAG_WITHKEXTS);
-            SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-          }
-        }
-      }
-      else if (OSFLAG_ISSET(Entry->Flags, OSFLAG_NOCACHES))
-      {
-        SubEntry = DuplicateLoaderEntry(Entry);
-        if (SubEntry) {
-          SubEntry->me.Title        = L"Boot macOS with caches and with injected kexts";
-          SubEntry->Flags           = OSFLAG_SET(OSFLAG_UNSET(SubEntry->Flags, OSFLAG_NOCACHES), OSFLAG_WITHKEXTS);
-          SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-      }
-      else
-      {
-        SubEntry = DuplicateLoaderEntry(Entry);
-        if (SubEntry) {
-          SubEntry->me.Title        = L"Boot macOS without caches and with injected kexts";
-          SubEntry->Flags           = OSFLAG_SET(OSFLAG_SET(SubEntry->Flags, OSFLAG_NOCACHES), OSFLAG_WITHKEXTS);
-          SubEntry->LoadOptions     = AddLoadOption(SubEntry->LoadOptions, L"-v");
-          AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-      }
-    }
-/*
-    // check for Apple hardware diagnostics
-    StrCpy(DiagsFileName, L"\\System\\Library\\CoreServices\\.diagnostics\\diags.efi");
-    if (FileExists(Volume->RootDir, DiagsFileName) && !(GlobalConfig.DisableFlags & HIDEUI_FLAG_HWTEST)) {
-      DBG("  - Apple Hardware Test found\n");
-
-      // NOTE: Sothor - I'm not sure if to duplicate parent entry here.
-      SubEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
-      SubEntry->me.Title        = PoolPrint(L"Run Apple Hardware Test");
-      SubEntry->me.Tag          = TAG_LOADER;
-      SubEntry->LoaderPath      = EfiStrDuplicate(DiagsFileName);
-      SubEntry->Volume          = Volume;
-      SubEntry->VolName         = EfiStrDuplicate(Entry->VolName);
-      SubEntry->DevicePath      = FileDevicePath(Volume->DeviceHandle, SubEntry->LoaderPath);
-      SubEntry->DevicePathString = EfiStrDuplicate(Entry->DevicePathString);
-      SubEntry->Flags           = OSFLAG_SET(Entry->Flags, OSFLAG_USEGRAPHICS);
-      SubEntry->me.AtClick      = ActionEnter;
-      AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-    }
- */
-#endif
   } else if (Entry->LoaderType == OSTYPE_LINEFI) {
     BOOLEAN Quiet = (StrStr(Entry->LoadOptions, L"quiet") != NULL);
     BOOLEAN WithSplash = (StrStr(Entry->LoadOptions, L"splash") != NULL);
@@ -1086,17 +945,29 @@ STATIC BOOLEAN AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderOptions,
   }
 
   DBG("        AddLoaderEntry for Volume Name=%s\n", Volume->VolName);
+  if (OSFLAG_ISSET(Flags, OSFLAG_DISABLED)) {
+    DBG("        skipped because entry is disabled\n");
+    return FALSE;
+  }
+  if (!gSettings.ShowHiddenEntries && OSFLAG_ISSET(Flags, OSFLAG_HIDDEN)) {
+    DBG("        skipped because entry is hidden\n");
+    return FALSE;
+  }
   //don't add hided entries
-  for (HVi = 0; HVi < gSettings.HVCount; HVi++) {
-    if (StriStr(LoaderPath, gSettings.HVHideStrings[HVi])) {
-      DBG("        hiding entry: %s\n", LoaderPath);
-      return FALSE;
+  if (!gSettings.ShowHiddenEntries) {
+    for (HVi = 0; HVi < gSettings.HVCount; HVi++) {
+      if (StriStr(LoaderPath, gSettings.HVHideStrings[HVi])) {
+        DBG("        hiding entry: %s\n", LoaderPath);
+        return FALSE;
+      }
     }
   }
 
   Entry = CreateLoaderEntry(LoaderPath, LoaderOptions, NULL, LoaderTitle, Volume, Image, NULL, OSType, Flags, 0, NULL, CUSTOM_BOOT_DISABLED, NULL, NULL, FALSE);
   if (Entry != NULL) {
-    if ((Entry->LoaderType == OSTYPE_OSX) || (Entry->LoaderType == OSTYPE_OSX_INSTALLER ) || (Entry->LoaderType == OSTYPE_RECOVERY)) {
+    if ((Entry->LoaderType == OSTYPE_OSX) ||
+        (Entry->LoaderType == OSTYPE_OSX_INSTALLER ) ||
+        (Entry->LoaderType == OSTYPE_RECOVERY)) {
       if (gSettings.WithKexts) {
         Entry->Flags = OSFLAG_SET(Entry->Flags, OSFLAG_WITHKEXTS);
       }
@@ -1119,6 +990,44 @@ STATIC BOOLEAN AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderOptions,
 //constants
 CHAR16  APFSFVBootPath[75]      = L"\\00000000-0000-0000-0000-000000000000\\System\\Library\\CoreServices\\boot.efi"; 
 CHAR16  APFSRecBootPath[47]     = L"\\00000000-0000-0000-0000-000000000000\\boot.efi";
+CHAR16  APFSInstallBootPath[67] = L"\\00000000-0000-0000-0000-000000000000\\com.apple.installer\\boot.efi";
+
+#define Paper 1
+#define Rock  2
+#define Scissor 4
+
+VOID AddPRSEntry(REFIT_VOLUME *Volume)
+{
+  INTN WhatBoot = 0;
+//  CONST INTN Paper = 1;
+//  CONST INTN Rock = 2;
+//  CONST INTN Scissor = 4;
+
+  WhatBoot |= FileExists(Volume->RootDir, RockBoot)?Rock:0;
+  WhatBoot |= FileExists(Volume->RootDir, PaperBoot)?Paper:0;
+  WhatBoot |= FileExists(Volume->RootDir, ScissorBoot)?Scissor:0;
+  switch (WhatBoot) {
+    case Paper:
+    case (Paper | Rock):
+      AddLoaderEntry(PaperBoot, NULL, L"macOS InstallP", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+      break;
+    case Scissor:
+    case (Paper | Scissor):
+      AddLoaderEntry(ScissorBoot, NULL, L"macOS InstallS", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+      break;
+    case Rock:
+    case (Rock | Scissor):
+    case (Rock | Scissor | Paper):
+      AddLoaderEntry(RockBoot, NULL, L"macOS InstallR", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+      break;
+
+    default:
+      break;
+  }
+}
+#undef Paper
+#undef Rock
+#undef Scissor
 
 VOID ScanLoader(VOID)
 {
@@ -1132,7 +1041,7 @@ VOID ScanLoader(VOID)
   for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
     Volume = Volumes[VolumeIndex];
     if (Volume->RootDir == NULL) { // || Volume->VolName == NULL)
-//      DBG(", no file system\n", VolumeIndex);
+      //DBG(", no file system\n", VolumeIndex);
       continue;
     }
     DBG("- [%02d]: '%s'", VolumeIndex, Volume->VolName);
@@ -1157,36 +1066,92 @@ VOID ScanLoader(VOID)
     DBG("\n");
 
     // check for Mac OS X Install Data
-    AddLoaderEntry(L"\\OS X Install Data\\boot.efi", NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
-    AddLoaderEntry(L"\\Mac OS X Install Data\\boot.efi", NULL, L"Mac OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
-    AddLoaderEntry(L"\\macOS Install Data\\boot.efi", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
-    AddLoaderEntry(L"\\macOS Install Data\\Locked Files\\Boot Files\\boot.efi", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
-    AddLoaderEntry(L"\\.IABootFiles\\boot.efi", NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+    // 1st stage - createinstallmedia
+    if (FileExists(Volume->RootDir, L"\\.IABootFiles\\boot.efi")) {
+      if (FileExists(Volume->RootDir, L"\\Install OS X Mavericks.app") ||
+          FileExists(Volume->RootDir, L"\\Install OS X Yosemite.app") ||
+          FileExists(Volume->RootDir, L"\\Install OS X El Capitan.app")) {
+        AddLoaderEntry(L"\\.IABootFiles\\boot.efi", NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.9 - 10.11
+      } else {
+        AddLoaderEntry(L"\\.IABootFiles\\boot.efi", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.12 - 10.13.3
+      }
+    } else if (FileExists(Volume->RootDir, L"\\.IAPhysicalMedia") && FileExists(Volume->RootDir, MACOSX_LOADER_PATH)) {
+      AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.13.4+
+    }
+    // 2nd stage - InstallESD/AppStore/startosinstall/Fusion Drive
+    AddLoaderEntry(L"\\Mac OS X Install Data\\boot.efi", NULL, L"Mac OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.7
+    AddLoaderEntry(L"\\OS X Install Data\\boot.efi", NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.8 - 10.11
+    AddLoaderEntry(L"\\macOS Install Data\\boot.efi", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.12 - 10.12.3
+    AddLoaderEntry(L"\\macOS Install Data\\Locked Files\\Boot Files\\boot.efi", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.12.4+
+    AddPRSEntry(Volume); // 10.12+
 
-    // Use standard location for boot.efi, unless the file /.IAPhysicalMedia is present
-    // That file indentifies a 2nd-stage Install Media, so when present, skip standard path to avoid entry duplication
-    if (!FileExists(Volume->RootDir, L"\\.IAPhysicalMedia")) {
-      if(EFI_ERROR(GetRootUUID(Volume)) || isFirstRootUUID(Volume)) {
-        AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"macOS", Volume, NULL, OSTYPE_OSX, 0);
+    // Netinstall
+    AddLoaderEntry(L"\\NetInstall macOS High Sierra.nbi\\i386\\booter", NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+
+    // Use standard location for boot.efi, according to the install files is present
+    // That file indentifies a DVD/ESD/BaseSystem/Fusion Drive Install Media, so when present, check standard path to avoid entry duplication
+    if (FileExists(Volume->RootDir, MACOSX_LOADER_PATH)) {
+      if (FileExists(Volume->RootDir, L"\\System\\Installation\\CDIS\\Mac OS X Installer.app")) {
+        // InstallDVD/BaseSystem
+        AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"Mac OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.6/10.7
+      } else if (FileExists(Volume->RootDir, L"\\System\\Installation\\CDIS\\OS X Installer.app")) {
+        // BaseSystem
+        AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.8 - 10.11
+      } else if (FileExists(Volume->RootDir, L"\\System\\Installation\\CDIS\\macOS Installer.app")) {
+        // BaseSystem
+        AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"macOS Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.12+
+      } else if (FileExists(Volume->RootDir, L"\\BaseSystem.dmg") && FileExists(Volume->RootDir, L"\\mach_kernel")) {
+        // InstallESD
+        if (FileExists(Volume->RootDir, L"\\MacOSX_Media_Background.png")) {
+          AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"Mac OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.7
+        } else {
+          AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.8
+        }
+      } else if (FileExists(Volume->RootDir, L"\\com.apple.boot.R\\System\\Library\\PrelinkedKernels\\prelinkedkernel") ||
+                 FileExists(Volume->RootDir, L"\\com.apple.boot.P\\System\\Library\\PrelinkedKernels\\prelinkedkernel") ||
+                 FileExists(Volume->RootDir, L"\\com.apple.boot.S\\System\\Library\\PrelinkedKernels\\prelinkedkernel")) {
+        if (StriStr(Volume->VolName, L"Recovery") != NULL) {
+          // FileVault of HFS+
+          // TODO: need info for 10.11 and lower
+          AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"macOS FileVault", Volume, NULL, OSTYPE_OSX, 0); // 10.12+
+        } else {
+          // Fusion Drive
+          AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"OS X Install", Volume, NULL, OSTYPE_OSX_INSTALLER, 0); // 10.11
+        }
+      } else if (!FileExists(Volume->RootDir, L"\\.IAPhysicalMedia")) {
+        // Installed
+        if (EFI_ERROR(GetRootUUID(Volume)) || isFirstRootUUID(Volume)) {
+          if (!FileExists(Volume->RootDir, L"\\System\\Library\\CoreServices\\NotificationCenter.app") && !FileExists(Volume->RootDir, L"\\System\\Library\\CoreServices\\Siri.app")) {
+            AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"Mac OS X", Volume, NULL, OSTYPE_OSX, 0); // 10.6 - 10.7
+          } else if (FileExists(Volume->RootDir, L"\\System\\Library\\CoreServices\\NotificationCenter.app") && !FileExists(Volume->RootDir, L"\\System\\Library\\CoreServices\\Siri.app")) {
+            AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"OS X", Volume, NULL, OSTYPE_OSX, 0); // 10.8 - 10.11
+          } else {
+            AddLoaderEntry(MACOSX_LOADER_PATH, NULL, L"macOS", Volume, NULL, OSTYPE_OSX, 0); // 10.12+
+          }
+        }
       }
     }
-/* APFS Container support. 
- * s.mtr 2017
- */
-if ((StriCmp(Volume->VolName,L"Recovery") == 0 || StriCmp(Volume->VolName,L"Preboot") == 0 )&&APFSSupport==TRUE) {
-    for (UINTN i = 0; i < APFSUUIDBankCounter+1; i++) {
-      //Store current UUID
-      CHAR16 *CurrentUUID=GuidLEToStr((EFI_GUID *)((UINT8 *)APFSUUIDBank+i*0x10));
-      //Fill with current UUID
-      StrnCpy(APFSFVBootPath+1,CurrentUUID,36);
-      StrnCpy(APFSRecBootPath+1,CurrentUUID,36);
-      ///Try to add FileVault entry
-      AddLoaderEntry(APFSFVBootPath, NULL, L"FileVault Prebooter", Volume, NULL, OSTYPE_OSX, 0);
-      //Try to add Recovery APFS entry
-      AddLoaderEntry(APFSRecBootPath, NULL, L"Recovery", Volume, NULL, OSTYPE_RECOVERY, 0);
-      FreePool(CurrentUUID);
+
+    /* APFS Container support. 
+     * s.mtr 2017
+     */
+    if ((StriCmp(Volume->VolName, L"Recovery") == 0 || StriCmp(Volume->VolName, L"Preboot") == 0) && APFSSupport == TRUE) {
+      for (UINTN i = 0; i < APFSUUIDBankCounter + 1; i++) {
+        //Store current UUID
+        CHAR16 *CurrentUUID = GuidLEToStr((EFI_GUID *)((UINT8 *)APFSUUIDBank + i * 0x10));
+        //Fill with current UUID
+        StrnCpy(APFSFVBootPath + 1, CurrentUUID, 36);
+        StrnCpy(APFSRecBootPath + 1, CurrentUUID, 36);
+        StrnCpy(APFSInstallBootPath + 1, CurrentUUID, 36);
+        //Try to add FileVault entry
+        AddLoaderEntry(APFSFVBootPath, NULL, L"FileVault Prebooter", Volume, NULL, OSTYPE_OSX, 0);
+        //Try to add Recovery APFS entry
+        AddLoaderEntry(APFSRecBootPath, NULL, L"Recovery", Volume, NULL, OSTYPE_RECOVERY, 0);
+        //Try to add macOS install entry
+        AddLoaderEntry(APFSInstallBootPath, NULL, L"macOS Install Prebooter", Volume, NULL, OSTYPE_OSX_INSTALLER, 0);
+        FreePool(CurrentUUID);
+      }
     }
-  }
 
     // check for Mac OS X Recovery Boot
     AddLoaderEntry(L"\\com.apple.recovery.boot\\boot.efi", NULL, L"Recovery", Volume, NULL, OSTYPE_RECOVERY, 0);
@@ -1201,8 +1166,8 @@ if ((StriCmp(Volume->VolName,L"Recovery") == 0 || StriCmp(Volume->VolName,L"Preb
     // since on some systems this will actually be CloverX64.efi
     // renamed to bootmgfw.efi
     AddLoaderEntry(L"\\EFI\\microsoft\\Boot\\bootmgfw.efi", L"", L"Microsoft EFI Boot", Volume, NULL, OSTYPE_WINEFI, 0);
-    // check for Microsoft boot loader/menu. This entry is redundant
-    AddLoaderEntry(L"\\bootmgr.efi", L"", L"Microsoft EFI mgrboot", Volume, NULL, OSTYPE_WINEFI, 0);
+    // check for Microsoft boot loader/menu. This entry is redundant so excluded
+    // AddLoaderEntry(L"\\bootmgr.efi", L"", L"Microsoft EFI mgrboot", Volume, NULL, OSTYPE_WINEFI, 0);
     // check for Microsoft boot loader/menu on CDROM
     if (!AddLoaderEntry(L"\\EFI\\MICROSOFT\\BOOT\\cdboot.efi", L"", L"Microsoft EFI cdboot", Volume, NULL, OSTYPE_WINEFI, 0)) {
       AddLoaderEntry(L"\\EFI\\MICROSOF\\BOOT\\CDBOOT.EFI", L"", L"Microsoft EFI CDBOOT", Volume, NULL, OSTYPE_WINEFI, 0);
@@ -1472,13 +1437,13 @@ if ((StriCmp(Volume->VolName,L"Recovery") == 0 || StriCmp(Volume->VolName,L"Preb
       AddLoaderEntry(BOOT_LOADER_PATH, L"", L"UEFI optical", Volume, NULL, OSTYPE_OTHER, 0);
     }
     //     DBG("search for internal UEFI\n");
-//    if (Volume->DiskKind == DISK_KIND_INTERNAL) {
-//      AddLoaderEntry(BOOT_LOADER_PATH, L"", L"UEFI internal", Volume, NULL, OSTYPE_OTHER, 0);
-//    }
+    if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+      AddLoaderEntry(BOOT_LOADER_PATH, L"", L"UEFI internal", Volume, NULL, OSTYPE_OTHER, OSFLAG_HIDDEN);
+    }
     //    DBG("search for external UEFI\n");
-//    if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
-//      AddLoaderEntry(BOOT_LOADER_PATH, L"", L"UEFI external", Volume, NULL, OSTYPE_OTHER, 0);
-//    }
+    if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
+      AddLoaderEntry(BOOT_LOADER_PATH, L"", L"UEFI external", Volume, NULL, OSTYPE_OTHER, OSFLAG_HIDDEN);
+    }
   }
 
 }

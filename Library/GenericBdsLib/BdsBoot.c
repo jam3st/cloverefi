@@ -1692,7 +1692,7 @@ BdsLibDoLegacyBoot (
 {
   EFI_STATUS                Status;
   EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
-  EFI_EVENT                 LegacyBootEvent;
+//  EFI_EVENT                 LegacyBootEvent;
 
   Status = gBS->LocateProtocol (&gEfiLegacyBiosProtocolGuid, NULL, (VOID **) &LegacyBios);
   if (EFI_ERROR (Status)) {
@@ -1709,18 +1709,19 @@ BdsLibDoLegacyBoot (
   //
   // Write boot to OS performance data for legacy boot.
   //
-  PERF_CODE (
+  //PERF_CODE (
     //
     // Create an event to be signalled when Legacy Boot occurs to write performance data.
     //
-   /* Status = */EfiCreateEventLegacyBootEx(
+   /* Status = EfiCreateEventLegacyBootEx(
                TPL_NOTIFY,
                WriteBootToOsPerformanceData,
                NULL, 
                &LegacyBootEvent
                );
 //    ASSERT_EFI_ERROR (Status);
-  );
+             */
+  //);
 
 //  DEBUG ((DEBUG_INFO | DEBUG_LOAD, "Legacy Boot: %S\n", Option->Description));
   return LegacyBios->LegacyBoot (
@@ -2466,9 +2467,9 @@ BdsLibBootViaBootOption (
   //
   // Write boot to OS performance data for UEFI boot
   //
-  PERF_CODE (
-    WriteBootToOsPerformanceData (NULL, NULL);
-  );
+ // PERF_CODE (
+//    WriteBootToOsPerformanceData (NULL, NULL);
+//  );
 
   //
   // Report status code for OS Loader StartImage.

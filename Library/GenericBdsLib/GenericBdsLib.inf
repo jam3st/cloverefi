@@ -33,7 +33,7 @@
 
 [Sources]
   DevicePath.c
-  Performance.c
+#Performance.c
   BdsConnect.c
   BdsMisc.c
   BdsConsole.c
@@ -129,7 +129,7 @@
   gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdShellFile
 
 [BuildOptions]
-  XCODE:*_*_*_CC_FLAGS = -Os -fno-lto -DMDEPKG_NDEBUG
-  GCC:*_*_*_CC_FLAGS = -Os -fno-lto -DMDEPKG_NDEBUG
+  XCODE:*_*_*_CC_FLAGS = -Os -fno-lto -UUSING_LTO -DMDEPKG_NDEBUG
+  GCC:*_*_*_CC_FLAGS = -Os -DMDEPKG_NDEBUG
   MSFT:*_*_*_CC_FLAGS = /D MDEPKG_NDEBUG
   

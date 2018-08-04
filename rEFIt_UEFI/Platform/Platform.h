@@ -96,6 +96,8 @@ Headers collection for procedures
 
 #define MAX_NUM_DEVICES  64
 
+#define HEIGHT_2K 1100
+
 /* Decimal powers: */
 #define kilo (1000ULL)
 #define Mega (kilo * kilo)
@@ -175,23 +177,23 @@ Headers collection for procedures
 #define CPU_MODEL_HASWELL_ULT   0x45  /* Haswell ULT */
 #define CPU_MODEL_CRYSTALWELL   0x46  /* Haswell ULX CPUID_MODEL_CRYSTALWELL */
 #define CPU_MODEL_BROADWELL_HQ  0x47
-#define CPU_MODEL_MERRIFIELD    0x4A /* Tangier */
-#define CPU_MODEL_AIRMONT       0x4C /* CherryTrail / Braswell */
-#define CPU_MODEL_AVOTON        0x4D /* Avaton/Rangely */
-#define CPU_MODEL_SKYLAKE_U     0x4E /* Skylake Mobile */
-#define CPU_MODEL_BROADWELL_E5  0x4F
-#define CPU_MODEL_SKYLAKE_S     0x55 /* Skylake Server */
+#define CPU_MODEL_MERRIFIELD    0x4A  /* Tangier */
+#define CPU_MODEL_AIRMONT       0x4C  /* CherryTrail / Braswell */
+#define CPU_MODEL_AVOTON        0x4D  /* Avaton/Rangely */
+#define CPU_MODEL_SKYLAKE_U     0x4E  /* Skylake Mobile */
+#define CPU_MODEL_BROADWELL_E5  0x4F  /* Xeon E5-2695 */
+#define CPU_MODEL_SKYLAKE_S     0x55  /* Skylake Server */
 #define CPU_MODEL_BROADWELL_DE  0x56
-#define CPU_MODEL_KNIGHT        0x57 /* Knights Landing */
-#define CPU_MODEL_MOOREFIELD    0x5A /* Annidale */
-#define CPU_MODEL_GOLDMONT      0x5C
+#define CPU_MODEL_KNIGHT        0x57  /* Knights Landing */
+#define CPU_MODEL_MOOREFIELD    0x5A  /* Annidale */
+#define CPU_MODEL_GOLDMONT      0x5C  /* Apollo Lake */
 #define CPU_MODEL_ATOM_X3       0x5D
-#define CPU_MODEL_SKYLAKE_D     0x5E /* Skylake Desktop */
-#define CPU_MODEL_DENVERTON     0x5F /* Goldmont Microserver */
+#define CPU_MODEL_SKYLAKE_D     0x5E  /* Skylake Desktop */
+#define CPU_MODEL_DENVERTON     0x5F  /* Goldmont Microserver */
 #define CPU_MODEL_CANNONLAKE    0x66
-#define CPU_MODEL_XEON_MILL     0x85 /* Knights Mill */
-#define CPU_MODEL_KABYLAKE1     0x8E /* Kabylake Mobile */
-#define CPU_MODEL_KABYLAKE2     0x9E /* Kabylake Dektop */
+#define CPU_MODEL_XEON_MILL     0x85  /* Knights Mill */
+#define CPU_MODEL_KABYLAKE1     0x8E  /* Kabylake Mobile */
+#define CPU_MODEL_KABYLAKE2     0x9E  /* Kabylake Dektop */
 
 #define CPU_VENDOR_INTEL        0x756E6547
 #define CPU_VENDOR_AMD          0x68747541
@@ -424,14 +426,14 @@ static void SavePState(unsigned int index, unsigned int lowMsr, unsigned int cor
   WrmsrTx(msrIndex, lower, higher, affinityMask);
 }
 
-MSR C0010064  8000-0185-0000-1418 [20.00x] [1.4250 V] [13.30 A] [PState Pb0]
-MSR C0010065  8000-0185-0000-1615 [18.50x] [1.4125 V] [13.30 A] [PState Pb1]
-MSR C0010066  8000-0173-0000-1A1A [21.00x] [1.3875 V] [11.50 A] [PState P0]
-MSR C0010067  0000-0173-0000-1A1A
-MSR C0010068  0000-0173-0000-181A
-MSR C0010069  0000-0173-0000-1A1A
-MSR C001006A  8000-0125-0000-604C [ 7.00x] [0.9500 V] [ 3.70 A] [PState P1]
-MSR C001006B  0000-0000-0000-0000
+MSR C0010064  8000-0185-0000-1418 [20.00x] [1.4250 V] [13.30 A] [PState Pb0]
+MSR C0010065  8000-0185-0000-1615 [18.50x] [1.4125 V] [13.30 A] [PState Pb1]
+MSR C0010066  8000-0173-0000-1A1A [21.00x] [1.3875 V] [11.50 A] [PState P0]
+MSR C0010067  0000-0173-0000-1A1A
+MSR C0010068  0000-0173-0000-181A
+MSR C0010069  0000-0173-0000-1A1A
+MSR C001006A  8000-0125-0000-604C [ 7.00x] [0.9500 V] [ 3.70 A] [PState P1]
+MSR C001006B  0000-0000-0000-0000
 */
 
 
@@ -450,6 +452,7 @@ MSR C001006B  0000-0000-0000-0000
 #define CPUID_81   8
 #define CPUID_87   9
 #define CPUID_88   10
+#define CPUID_81E  11
 #define CPUID_15   15
 #define CPUID_MAX  16
 
@@ -542,7 +545,7 @@ MSR C001006B  0000-0000-0000-0000
 #define FIX_HDA       bit(15)
 //new bits 16-31 0xFFFF0000
 //#define FIX_NEW_WAY   bit(31) will be reused
-//#define FIX_DARWIN   bit(16)
+#define FIX_DARWIN    bit(16)
 #define FIX_RTC       bit(17)
 #define FIX_TMR       bit(18)
 #define FIX_IMEI      bit(19)
@@ -555,6 +558,8 @@ MSR C001006B  0000-0000-0000-0000
 #define FIX_ACST      bit(26)
 #define FIX_HDMI      bit(27)
 #define FIX_REGIONS   bit(28)
+#define FIX_HEADERS   bit(29)
+#define FIX_MUTEX     bit(30)
 
 //devices
 #define DEV_ATI       bit(0)
@@ -609,7 +614,7 @@ MSR C001006B  0000-0000-0000-0000
 /// @param FIELDTYPE    The type of the member field
 /// @param Field        The name of the field of which to get the address
 /// @return The address of the offset of the member field in the instance structure
-#define ADDRESS_OF(INSTANCETYPE, Instance, FIELDTYPE, Field) (FIELDTYPE *)(((UINT8 *)(Instance)) + OFFSET_OF(INSTANCETYPE, Field))
+//#define ADDRESS_OF(INSTANCETYPE, Instance, FIELDTYPE, Field) (FIELDTYPE *)(((UINT8 *)(Instance)) + OFFSET_OF(INSTANCETYPE, Field))
 
 
 struct aml_chunk
@@ -678,12 +683,11 @@ typedef struct _DRIVERS_FLAGS {
   BOOLEAN MemFixLoaded;
   BOOLEAN AptioFixLoaded;
   BOOLEAN AptioFix2Loaded;
+  BOOLEAN AptioFix3Loaded;
+  BOOLEAN AptioMemFixLoaded;
   BOOLEAN HFSLoaded;
   BOOLEAN APFSLoaded;
 } DRIVERS_FLAGS;
-
-#pragma pack(push)
-#pragma pack(1)
 
 struct Symbol {
   UINTN         refCount;
@@ -704,6 +708,9 @@ typedef struct {
   VOID   *tagNext;
 
 } TagStruct, *TagPtr;
+
+#pragma pack(push)
+#pragma pack(1)
 
 typedef struct {
 
@@ -727,17 +734,28 @@ typedef struct {
 } GUID;
 */
 
+#pragma pack(pop)
+
 typedef struct DEV_PROPERTY DEV_PROPERTY; //yyyy
 struct DEV_PROPERTY {
   UINT32        Device;
+  EFI_DEVICE_PATH_PROTOCOL* DevicePath;
   CHAR8         *Key;
   CHAR8         *Value;
   UINTN         ValueLen;
-  DEV_PROPERTY  *Next;
+  DEV_PROPERTY  *Next;   //next device or next property
+  DEV_PROPERTY  *Child;  // property list of the device
   CHAR8         *Label;
   INPUT_ITEM    MenuItem;
   TAG_TYPE      ValueType;
 };
+
+typedef struct ACPI_NAME_LIST ACPI_NAME_LIST;
+struct ACPI_NAME_LIST {
+	ACPI_NAME_LIST *Next;
+	CHAR8          *Name;
+};
+
 
 typedef struct CUSTOM_LOADER_ENTRY CUSTOM_LOADER_ENTRY;
 struct CUSTOM_LOADER_ENTRY {
@@ -815,6 +833,17 @@ struct ACPI_PATCHED_AML
   INPUT_ITEM        MenuItem;
 };
 
+// syscl - Side load kext
+typedef struct SIDELOAD_KEXT SIDELOAD_KEXT;
+struct SIDELOAD_KEXT {
+  SIDELOAD_KEXT  *Next;
+  SIDELOAD_KEXT  *PlugInList;
+  CHAR16         *FileName;
+  CHAR16         *MatchOS;
+  CHAR16         *Version;
+  INPUT_ITEM     MenuItem;
+};
+
 // SysVariables
 typedef struct SYSVARIABLES SYSVARIABLES;
 struct SYSVARIABLES
@@ -879,6 +908,7 @@ typedef struct {
   UINT16                  CpuType;
   // SMBIOS TYPE132
   UINT16                  QPI;
+  BOOLEAN                 SetTable132;
   BOOLEAN                 TrustSMBIOS;
   BOOLEAN                 InjectMemoryTables;
   INT8                    XMPDetection;
@@ -890,22 +920,17 @@ typedef struct {
   CHAR8                   Language[16];
   CHAR8                   BootArgs[256];
   CHAR16                  CustomUuid[40];
-  
+
   CHAR16                  *DefaultVolume;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align10;
-#endif
   CHAR16                  *DefaultLoader;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align11;
-#endif
 //Boot
   BOOLEAN                 LastBootedVolume;
   BOOLEAN                 SkipHibernateTimeout;
-  UINT8                   Pad21[2];
 //Monitor
+  BOOLEAN                 IntelMaxBacklight;
+//  UINT8                   Pad21[1];
   UINT16                  VendorEDID;
-  UINT16                  ProductEDID;  
+  UINT16                  ProductEDID;
   UINT16                  BacklightLevel;
   BOOLEAN                 BacklightLevelConfig;
   BOOLEAN                 IntelBacklight;
@@ -919,7 +944,7 @@ typedef struct {
   // GUI parameters
   BOOLEAN                 Debug;
   BOOLEAN                 Proportional;
-  UINT8                   Pad22[1];
+//  UINT8                   Pad22[1];
   UINT32                  DefaultBackgroundColor;
 
   //ACPI
@@ -927,8 +952,14 @@ typedef struct {
   UINT8                   ResetVal;
   BOOLEAN                 NoASPM;
   BOOLEAN                 DropSSDT;
+  BOOLEAN                 NoOemTableId;
+  BOOLEAN                 NoDynamicExtract;
+  BOOLEAN                 AutoMerge;
   BOOLEAN                 GeneratePStates;
   BOOLEAN                 GenerateCStates;
+  BOOLEAN                 GenerateAPSN;
+  BOOLEAN                 GenerateAPLF;
+  BOOLEAN                 GeneratePluginType;
   UINT8                   PLimitDict;
   UINT8                   UnderVoltStep;
   BOOLEAN                 DoubleFirstState;
@@ -938,6 +969,7 @@ typedef struct {
   BOOLEAN                 EnableC6;
   BOOLEAN                 EnableISS;
   BOOLEAN                 SlpSmiEnable;
+  BOOLEAN                 FixHeaders;
   UINT16                  C3Latency;
   BOOLEAN                 smartUPS;
   BOOLEAN                 PatchNMI;
@@ -949,8 +981,11 @@ typedef struct {
   UINT8                   MinMultiplier;
   UINT8                   MaxMultiplier;
   UINT8                   PluginType;
-  BOOLEAN                 DropMCFG;
+//  BOOLEAN                 DropMCFG;
+  BOOLEAN                 FixMCFG;
 
+  UINT32				DeviceRenameCount;
+  ACPI_NAME_LIST		*DeviceRename;
   //Injections
   BOOLEAN                 StringInjector;
   BOOLEAN                 InjectSystemID;
@@ -969,33 +1004,28 @@ typedef struct {
   UINT32                  FakeIMEI;  //106
 
   //Graphics
-  UINT16                  PCIRootUID;
+//  UINT16                  PCIRootUID;
   BOOLEAN                 GraphicsInjector;
   BOOLEAN                 InjectIntel;
   BOOLEAN                 InjectATI;
   BOOLEAN                 InjectNVidia;
+  BOOLEAN                 DeInit;
   BOOLEAN                 LoadVBios;
   BOOLEAN                 PatchVBios;
   VBIOS_PATCH_BYTES       *PatchVBiosBytes;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align12;
-#endif
-
   UINTN                   PatchVBiosBytesCount;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align1;
-#endif
   BOOLEAN                 InjectEDID;
   BOOLEAN                 LpcTune;
   UINT16                  DropOEM_DSM;
   UINT8                   *CustomEDID;
-#if defined(MDE_CPU_IA32)
-  UINT32  align13;
-#endif
+  UINT16                  CustomEDIDsize;
+  UINT16                  EdidFixHorizontalSyncPulseWidth;
+  UINT8                   EdidFixVideoInputSignal;
 
   CHAR16                  FBName[16];
   UINT16                  VideoPorts;
   BOOLEAN                 NvidiaGeneric;
+  BOOLEAN                 NvidiaNoEFI;
   BOOLEAN                 NvidiaSingle;
   UINT64                  VRAM;
   UINT8                   Dcfg[8];
@@ -1010,14 +1040,8 @@ typedef struct {
   UINT32                  SecureBootWhiteListCount;
   UINT32                  SecureBootBlackListCount;
   CHAR16                  **SecureBootWhiteList;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align14;
-#endif
 
   CHAR16                  **SecureBootBlackList;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align15;
-#endif
 
   // Secure boot
   UINT8                   SecureBoot;
@@ -1035,8 +1059,11 @@ typedef struct {
   BOOLEAN                 HighCurrent;
   BOOLEAN                 NameEH00;
   BOOLEAN                 NameXH00;
+  
+  BOOLEAN                 LANInjection;
+  BOOLEAN                 HDMIInjection;
 
-  UINT8                   pad61[2];
+ // UINT8                   pad61[2];
 
   // LegacyBoot
   CHAR16                  LegacyBoot[32];
@@ -1049,30 +1076,23 @@ typedef struct {
 
   //Volumes hiding
   CHAR16                  **HVHideStrings;
-#if defined(MDE_CPU_IA32)
-  UINT32  align191;
-#endif
 
   INTN                    HVCount;
-#if defined(MDE_CPU_IA32)
-  UINT32  align4;
-#endif
 
   // KernelAndKextPatches
   KERNEL_AND_KEXT_PATCHES KernelAndKextPatches;  //zzzz
   BOOLEAN                 KextPatchesAllowed;
   BOOLEAN                 KernelPatchesAllowed; //From GUI: Only for user patches, not internal Clover
 
+  CHAR8                   AirportBridgeDeviceName[5];
+
   //Pointer
   BOOLEAN                 PointerEnabled;
-  UINT8                   pad82[5];
   INTN                    PointerSpeed;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align5;
-#endif
   UINT64                  DoubleClickTime;
   BOOLEAN                 PointerMirror;
-  UINT8                   pad7[2];
+
+//  UINT8                   pad7[6];
   UINT8                   CustomBoot;
   EG_IMAGE                *CustomLogo;
 
@@ -1080,18 +1100,8 @@ typedef struct {
 
   // SysVariables
   CHAR8                   *RtMLB;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align20;
-#endif
-
   UINT8                   *RtROM;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align21;
-#endif
   UINTN                   RtROMLen;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align6;
-#endif
 
   UINT32                  CsrActiveConfig;
   UINT16                  BooterConfig;
@@ -1099,25 +1109,12 @@ typedef struct {
   BOOLEAN                 NeverDoRecovery;
 
   // Multi-config
-  CHAR16  *ConfigName;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align24;
-#endif
-
+  CHAR16  ConfigName[30];
   CHAR16  *MainConfigName;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align25;
-#endif
 
   //Drivers
   INTN    BlackListCount;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align7;
-#endif
   CHAR16                  **BlackList;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align26;
-#endif
 
   //SMC keys
   CHAR8                   RPlt[8];
@@ -1129,44 +1126,24 @@ typedef struct {
   BOOLEAN                 Rtc8Allowed;
   BOOLEAN                 ForceHPET;
   BOOLEAN                 ResetHDA;
-  BOOLEAN                 DeInit;
-  UINT8                   pad8[2];
   UINT32                  DisableFunctions;
 
   //Patch DSDT arbitrary
   UINT32                  PatchDsdtNum;
   UINT8                   **PatchDsdtFind;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align27;
-#endif
-
   UINT32 *LenToFind;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align28;
-#endif
-
   UINT8  **PatchDsdtReplace;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align29;
-#endif
 
   UINT32 *LenToReplace;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align30;
-#endif
-
   BOOLEAN                 DebugDSDT;
   BOOLEAN                 SlpWak;
   BOOLEAN                 UseIntelHDMI;
   UINT8                   AFGLowPowerState;
-  UINT8                   pad83[4];
+//  UINT8                   pad83[4];
+
 
   // Table dropping
   ACPI_DROP_TABLE         *ACPIDropTables;
-#if defined(MDE_CPU_IA32)
-  UINT32  align32;
-#endif
-
 
   // Custom entries
   BOOLEAN                 DisableEntryScan;
@@ -1174,56 +1151,45 @@ typedef struct {
   BOOLEAN                 ShowHiddenEntries;
   UINT8                   KernelScan;
   BOOLEAN                 LinuxScan;
-  UINT8                   pad84[3];
+//  UINT8                   pad84[3];
   CUSTOM_LOADER_ENTRY     *CustomEntries;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align33;
-#endif
   CUSTOM_LEGACY_ENTRY     *CustomLegacy;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align34;
-#endif
   CUSTOM_TOOL_ENTRY       *CustomTool;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align35;
-#endif
 
   //Add custom properties
   UINTN                   NrAddProperties;
-#if defined(MDE_CPU_IA32)
-  UINT32  align8;
-#endif
   DEV_PROPERTY            *AddProperties;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align31;
-#endif
 
   //BlackListed kexts
   CHAR16                  BlockKexts[64];
 
+  // Disable inject kexts
+//  UINT32                  DisableInjectKextCount;
+//  CHAR16                  **DisabledInjectKext;
+//  INPUT_ITEM              *InjectKextMenuItem;
+
   //ACPI tables
   UINTN                   SortedACPICount;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align37;
-#endif
   CHAR16                  **SortedACPI;
-#if defined(MDE_CPU_IA32)
-  UINT32                  align38;
-#endif
 
   // ACPI/PATCHED/AML
   UINT32                  DisabledAMLCount;
   CHAR16                  **DisabledAML;
   CHAR8                   **PatchDsdtLabel; //yyyy
+  CHAR8                   **PatchDsdtTgt;
   INPUT_ITEM              *PatchDsdtMenuItem;
-  
-  
-  // boot.efi 
+
+  //other
+  UINT32                  IntelMaxValue;
+
+  // boot.efi
   UINT32 OptionsBits;
   UINT32 FlagsBits;
   UINT32 UIScale;
   UINT32 EFILoginHiDPI;
   UINT8  flagstate[32];
+
+  DEV_PROPERTY            *ArbProperties;
 
 } SETTINGS_DATA;
 
@@ -1325,6 +1291,8 @@ typedef enum {
   MacBookPro141,
   MacBookPro142,
   MacBookPro143,
+  MacBookPro151,
+  MacBookPro152,
   MacBookAir11,
   MacBookAir21,
   MacBookAir31,
@@ -1375,6 +1343,7 @@ typedef enum {
   iMac181,
   iMac182,
   iMac183,
+  iMacPro11,
   MacPro11,
   MacPro21,
   MacPro31,
@@ -1575,7 +1544,7 @@ typedef struct {
 #define CARDLIST_SIGNATURE SIGNATURE_32('C','A','R','D')
 
 
-#pragma pack(pop)
+
 //extern CHAR8                          *msgbuf;
 //extern CHAR8                          *msgCursor;
 extern APPLE_SMBIOS_STRUCTURE_POINTER SmbiosTable;
@@ -1589,6 +1558,7 @@ extern BOOLEAN                        DoHibernateWake;
 extern UINTN 						  APFSUUIDBankCounter;
 extern UINT8 						 *APFSUUIDBank;
 extern CHAR16						 **SystemPlists;
+extern CHAR16                        **InstallPlists;
 extern CHAR16						 **RecoveryPlists;
 extern EFI_GUID                        APFSSignature;
 extern BOOLEAN                         APFSSupport;
@@ -1623,7 +1593,7 @@ extern CPU_STRUCTURE                  gCPUStructure;
 extern EFI_GUID                       gUuid;
 extern SLOT_DEVICE                    SlotDevices[];
 extern EFI_EDID_DISCOVERED_PROTOCOL   *EdidDiscovered;
-extern UINT8                          *gEDID;
+//extern UINT8                          *gEDID;
 extern UINT32                         mPropSize;
 extern UINT8                          *mProperties;
 extern CHAR8                          *gDeviceProperties;
@@ -1634,6 +1604,7 @@ extern INPUT_ITEM                     *InputItems;
 extern BOOLEAN                        SavePreBootLog;
 extern CHAR8                          *BootOSName;
 //extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput;
+extern UINT64                    machineSignature;
 
 extern EFI_GUID                        gEfiAppleBootGuid;
 extern EFI_GUID                        gEfiAppleNvramGuid;
@@ -1658,6 +1629,7 @@ extern ACTION                          gAction;
 extern UINTN                           gItemID;
 extern INTN                            OldChosenTheme;
 extern INTN                            OldChosenConfig;
+extern INTN                            OldChosenDsdt;
 
 //CHAR8*   orgBiosDsdt;
 extern UINT64                          BiosDsdt;
@@ -1673,6 +1645,9 @@ extern TagPtr                          gConfigDict[];
 
 // ACPI/PATCHED/AML
 extern ACPI_PATCHED_AML                *ACPIPatchedAML;
+
+// Sideload/inject kext
+extern SIDELOAD_KEXT                   *InjectKextList;
 
 // SysVariables
 //extern SYSVARIABLES                   *SysVariables;
@@ -1695,8 +1670,11 @@ FixBiosDsdt (
   );
 
 VOID
+RenameDevices(UINT8* table);
+
+VOID
 GetBiosRegions (
-  EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE *fadt
+  UINT8  *buffer
   );
 
 INT32
@@ -1708,13 +1686,13 @@ FindBin (
   );
 
 EFI_STATUS
-MouseBirth ();
+MouseBirth (VOID);
 
 VOID
-KillMouse ();
+KillMouse (VOID);
 
 VOID
-HidePointer ();
+HidePointer (VOID);
 
 EFI_STATUS
 WaitForInputEventPoll (
@@ -1723,7 +1701,7 @@ WaitForInputEventPoll (
   );
 
 VOID
-InitBooterLog ();
+InitBooterLog (VOID);
 
 EFI_STATUS
 SetupBooterLog (
@@ -1760,7 +1738,7 @@ MACHINE_TYPES GetModelFromString (
   );
 
 VOID
-GetDefaultSettings();
+GetDefaultSettings(VOID);
 
 VOID
 FillInputs (
@@ -1768,7 +1746,7 @@ FillInputs (
   );
 
 VOID
-ApplyInputs ();
+ApplyInputs (VOID);
 
 
 BOOLEAN
@@ -1776,12 +1754,6 @@ IsValidGuidAsciiString (
   IN CHAR8 *Str
   );
 
-#if 0
-EFI_STATUS
-StrToGuid2 (
-  IN      CHAR16   *Str,
-     OUT  EFI_GUID *Guid);
-#endif
 
 EFI_STATUS
 StrToGuidLE (
@@ -1797,19 +1769,19 @@ InitBootScreen (
   );
 
 EFI_STATUS
-InitializeConsoleSim ();
+InitializeConsoleSim (VOID);
 
 EFI_STATUS
-GuiEventsInitialize ();
+GuiEventsInitialize (VOID);
 
 EFI_STATUS
-InitializeEdidOverride ();
+InitializeEdidOverride (VOID);
 
 UINT8*
-getCurrentEdid ();
+getCurrentEdid (VOID);
 
 EFI_STATUS
-GetEdidDiscovered ();
+GetEdidDiscovered (VOID);
 
 //Settings.c
 UINT32
@@ -1819,16 +1791,16 @@ GetCrc32 (
   );
 
 VOID
-GetCPUProperties ();
+GetCPUProperties (VOID);
 
 VOID
-GetDevices();
+GetDevices(VOID);
 
 MACHINE_TYPES
-GetDefaultModel ();
+GetDefaultModel (VOID);
 
 UINT16
-GetAdvancedCpuType ();
+GetAdvancedCpuType (VOID);
 
 CHAR8
 *GetOSVersion (
@@ -1869,7 +1841,7 @@ SetFSInjection (
   );
 
 CHAR16*
-GetOtherKextsDir ();
+GetOtherKextsDir (VOID);
 
 CHAR16*
 GetOSVersionKextsDir (
@@ -1928,8 +1900,18 @@ DeleteNvramVariable (
   IN  EFI_GUID *VendorGuid
   );
 
+VOID
+ResetNvram (VOID);
+
 EFI_STATUS
-GetEfiBootDeviceFromNvram ();
+ResetEmuNvram (VOID);
+
+EFI_STATUS
+ResetNativeNvram (VOID);
+;
+
+EFI_STATUS
+GetEfiBootDeviceFromNvram (VOID);
 
 EFI_GUID
 *FindGPTPartitionGuidInDevicePath (
@@ -1937,15 +1919,15 @@ EFI_GUID
   );
 
 VOID
-PutNvramPlistToRtVars ();
+PutNvramPlistToRtVars (VOID);
 
 VOID
 GetSmcKeys(BOOLEAN WriteToSMC);
 
-//VOID DumpSmcKeys();
+//VOID DumpSmcKeys(VOID);
 
 VOID
-GetMacAddress();
+GetMacAddress(VOID);
 
 INTN
 FindStartupDiskVolume (
@@ -1959,7 +1941,7 @@ SetStartupDiskVolume (
   );
 
 VOID
-RemoveStartupDiskVolume ();
+RemoveStartupDiskVolume (VOID);
 
 UINT64
 GetEfiTimeInMs (IN EFI_TIME *T);
@@ -1983,7 +1965,7 @@ EFIAPI
 SetupDataForOSX (BOOLEAN Hibernate);
 
 EFI_STATUS
-SetPrivateVarProto ();
+SetPrivateVarProto (VOID);
 
 VOID
 SetDevices (
@@ -1991,7 +1973,7 @@ SetDevices (
   );
 
 VOID
-ScanSPD ();
+ScanSPD (VOID);
 
 BOOLEAN
 setup_ati_devprop (
@@ -2001,6 +1983,7 @@ setup_ati_devprop (
 
 BOOLEAN
 setup_gma_devprop (
+  LOADER_ENTRY *Entry,
   pci_dt_t *gma_dev
   );
 
@@ -2041,6 +2024,8 @@ CHAR8
   UINT32 subsys_id,
   CARDLIST * nvcard
   );
+
+UINT32 PciAddrFromDevicePath(EFI_DEVICE_PATH_PROTOCOL* DevicePath);
 
 VOID
 FillCardList(
@@ -2083,10 +2068,14 @@ Checksum8 (
   UINT32 len
   );
 
+void FixChecksum(EFI_ACPI_DESCRIPTION_HEADER* Table);
+
+/*
 BOOLEAN
 tableSign (
   CHAR8       *table,
   CONST CHAR8 *sgn);
+ */
 
 VOID
 SaveOemDsdt (
@@ -2094,10 +2083,10 @@ SaveOemDsdt (
   );
 
 VOID
-SaveOemTables ();
+SaveOemTables (VOID);
 
 EFI_ACPI_2_0_FIXED_ACPI_DESCRIPTION_TABLE
-*GetFadt ();
+*GetFadt (VOID);
 
 UINT32
 FixAny (
@@ -2110,7 +2099,7 @@ FixAny (
   );
 
 VOID
-GetAcpiTablesList ();
+GetAcpiTablesList (VOID);
 
 EFI_STATUS
 EventsInitialize (
@@ -2148,7 +2137,7 @@ bootLegacyBiosDefault (
   );
 
 VOID
-DumpBiosMemoryMap ();
+DumpBiosMemoryMap (VOID);
 
 CHAR8*
 XMLDecode (
@@ -2217,7 +2206,7 @@ GetPropertyInteger (
   );
 
 EFI_STATUS
-SaveSettings ();
+SaveSettings (VOID);
 
 UINTN
 iStrLen(
@@ -2226,16 +2215,16 @@ iStrLen(
   );
 
 EFI_STATUS
-PrepatchSmbios ();
+PrepatchSmbios (VOID);
 
 VOID
-PatchSmbios ();
+PatchSmbios (VOID);
 
 VOID
-FinalizeSmbios ();
+FinalizeSmbios (VOID);
 
 EFI_STATUS
-FixOwnership ();
+FixOwnership (VOID);
 
 UINT8
 *Base64Decode (
@@ -2249,7 +2238,7 @@ TimeDiff(
   UINT64 t1);
 
 VOID
-SetCPUProperties ();
+SetCPUProperties (VOID);
 
 // Settings.c
 // Micky1979: Next five functions (+ needed struct) are to split a string like "10.10.5,10.7,10.11.6,10.8.x"
@@ -2391,6 +2380,9 @@ VOID GetBootFromOption(VOID);
 //
 VOID
 SetBootCurrent(REFIT_MENU_ENTRY *LoadedEntry);
+
+VOID
+InitKextList(VOID);
 
 //
 // PlatformDriverOverride.c
